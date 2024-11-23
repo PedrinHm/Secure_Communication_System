@@ -35,7 +35,7 @@ export function SignStep() {
   };
 
   return (
-    <div className="flex flex-col items-center p-8 space-y-8">
+    <div className="flex flex-col items-center p-6 space-y-8">
       {/* Container principal com largura fixa */}
       <div className="w-full max-w-4xl grid grid-cols-3 gap-4">
         {/* Coluna da esquerda - Assinatura */}
@@ -51,7 +51,7 @@ export function SignStep() {
             Assinar Digitalmente
           </button>
           {showSignInfo && (
-            <div className="mt-4 bg-green-50 p-4 rounded-lg">
+            <div className="mt-2 bg-green-50 p-4 rounded-lg">
               <h3 className="font-semibold text-green-700 mb-2">Assinatura Digital</h3>
               <p className="text-sm text-green-600">
                 A assinatura digital garante a autenticidade do documento, 
@@ -115,7 +115,7 @@ export function SignStep() {
             Cifrar Arquivo
           </button>
           {showEncryptInfo && (
-            <div className="mt-4 bg-yellow-50 p-4 rounded-lg">
+            <div className="mt-2 bg-yellow-50 p-4 rounded-lg">
               <h3 className="font-semibold text-yellow-700 mb-2">Cifragem</h3>
               <p className="text-sm text-yellow-600">
                 A cifragem protege o conteúdo do arquivo, tornando-o ilegível 
