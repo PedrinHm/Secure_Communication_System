@@ -5,6 +5,53 @@ import { MdSecurity } from 'react-icons/md';
 import { Button } from "@/components/ui/button";
 import { KeyGenerationLoading } from "@/components/KeyGenerationLoading";
 
+function KeyDisplay({ title, content, bgColor, textColor }: { title: string; content: string; bgColor: string; textColor: string }) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const getExplanation = (title: string) => {
+    switch (title) {
+      case "Chave Pública RSA":
+        return "Chave pública RSA é usada para criptografar dados e verificar assinaturas digitais. Pode ser compartilhada livremente.";
+      case "Chave Privada RSA":
+        return "Chave privada RSA é usada para descriptografar dados e criar assinaturas digitais. Deve ser mantida em segredo.";
+      case "Chave AES":
+        return "Chave simétrica AES é usada tanto para criptografar quanto descriptografar dados. É mais rápida que RSA, mas deve ser compartilhada de forma segura.";
+      default:
+        return content;
+    }
+  };
+
+  return (
+    <div 
+      style={{ 
+        backgroundColor: bgColor, 
+        borderColor: textColor,
+        width: '350px',
+        height: '400px',
+        margin: '0 16px 16px 16px'
+      }} 
+      className="p-8 rounded-lg border flex flex-col items-center justify-start"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <h3 className="text-lg font-semibold mb-4 text-center" style={{ color: textColor }}>{title}</h3>
+      <pre 
+        className="font-mono text-sm text-center overflow-auto"
+        style={{ 
+          color: textColor,
+          overflowWrap: 'break-word',
+          wordBreak: 'break-word',
+          whiteSpace: 'pre-wrap',
+          width: '100%',
+          flex: 1
+        }}>
+        {isHovered ? getExplanation(title) : content}
+      </pre>
+    </div>
+  );
+}
+
+
 export const steps: Step[] = [
   {
     id: 'config',
@@ -14,32 +61,32 @@ export const steps: Step[] = [
       const [showAESLoading, setShowAESLoading] = useState(false);
       const [rsaGenerated, setRsaGenerated] = useState(false);
       const [aesGenerated, setAesGenerated] = useState(false);
-      const [showRSAPublicDescription, setShowRSAPublicDescription] = useState(false);
-      const [showRSAPrivateDescription, setShowRSAPrivateDescription] = useState(false);
-      const [showAESDescription, setShowAESDescription] = useState(false);
-      
+      const [showRSAKeys, setShowRSAKeys] = useState(false);
+      const [showAESKey, setShowAESKey] = useState(false);
+
       const handleGenerateRSA = () => {
         setShowRSALoading(true);
-        setTimeout(() => setRsaGenerated(true), 2000);
+        setTimeout(() => {
+          setRsaGenerated(true);
+        }, 2000);
       };
 
       const handleGenerateAES = () => {
         setShowAESLoading(true);
-        setTimeout(() => setAesGenerated(true), 2000);
+        setTimeout(() => {
+          setAesGenerated(true);
+        }, 2000);
       };
-
-      // Adicione uma classe CSS comum para os contêineres de chave com tamanho fixo
-      const keyContainerStyle = "bg-blue-100 p-4 rounded-lg shadow-md border-2 border-blue-300 flex flex-col w-[300px] h-[200px]";
 
       return (
         <div className="space-y-8 h-full flex flex-col">
           <h2 className="text-xl font-bold mb-4">Configuração Inicial</h2>
-          
+
           <div className="flex flex-col gap-4 h-full">
             {/* Botão RSA */}
             <Button 
               onClick={handleGenerateRSA}
-              className={`gap-6 max-w-[280px] ${
+              className={`gap-6 max-w-[280px] mb-4 ${
                 rsaGenerated ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'
               }`}
               size="lg"
@@ -52,7 +99,7 @@ export const steps: Step[] = [
             {/* Botão AES */}
             <Button 
               onClick={handleGenerateAES}
-              className={`gap-6 max-w-[280px] ${
+              className={`gap-6 max-w-[280px] mb-4 ${
                 aesGenerated ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'
               }`}
               size="lg"
@@ -66,7 +113,10 @@ export const steps: Step[] = [
             {showRSALoading && (
               <KeyGenerationLoading 
                 type="RSA" 
-                onComplete={() => setShowRSALoading(false)} 
+                onComplete={() => {
+                  setShowRSALoading(false);
+                  setShowRSAKeys(true);
+                }} 
               />
             )}
 
@@ -74,111 +124,47 @@ export const steps: Step[] = [
             {showAESLoading && (
               <KeyGenerationLoading 
                 type="AES" 
-                onComplete={() => setShowAESLoading(false)} 
+                onComplete={() => {
+                  setShowAESLoading(false);
+                  setShowAESKey(true);
+                }} 
               />
             )}
 
-            {/* Exibição das chaves */}
-            <div className="flex gap-4 h-full">
-              {/* Container das chaves RSA */}
-              {rsaGenerated && (
+            {/* Exibição das chaves RSA e AES */}
+            <div className="flex flex-wrap gap-8 mt-8 justify-center">
+              {showRSAKeys && (
                 <>
-                  <div className={keyContainerStyle}>
-                    <h3 className="text-lg font-semibold mb-3 text-blue-800 text-center">
-                      Chave Pública RSA
-                    </h3>
-                    <div 
-                      style={{backgroundColor: '#2563eb'}}
-                      className="p-3 rounded font-mono text-base border border-blue-200 text-white flex-1 overflow-hidden text-ellipsis"
-                      onMouseEnter={() => setShowRSAPublicDescription(true)}
-                      onMouseLeave={() => setShowRSAPublicDescription(false)}
-                    >
-                      <div className="text-center pt-4 px-4">
-                        {showRSAPublicDescription ? (
-                          <span>Esta é a chave pública RSA usada para criptografar dados.</span>
-                        ) : (
-                          <>
-                            -----BEGIN PUBLIC KEY-----<br />
-                            <span className="my-1 inline-block">MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA</span><br />
-                            <span className="my-1 inline-block">9j3KDqZPUxnhqZfc8QNn4kW1y0zFhQEXZ9Rqz/dVuPND</span><br />
-                            <span className="my-1 inline-block">mX3IwZQQUB9cZ+XkqNX5mMULw5xNVHjPYeIHAkBABD7U</span><br />
-                            <span className="my-1 inline-block">8VYR3XfGD9N1Xt8K3DcuDmKz9hN5vY2WqR4PJH6zv8k9</span><br />
-                            <span className="my-1 inline-block">mX3IwZQQUB9cZ+XkqNX5mMULw5xNVHjPYeIHAkBABD7U</span><br />
-                            -----END PUBLIC KEY-----
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className={keyContainerStyle}>
-                    <h3 className="text-lg font-semibold mb-3 text-blue-800 text-center">
-                      Chave Privada RSA
-                    </h3>
-                    <div 
-                      style={{backgroundColor: '#2563eb'}}
-                      className="p-3 rounded font-mono text-base border border-blue-200 text-white flex-1 overflow-hidden text-ellipsis"
-                      onMouseEnter={() => setShowRSAPrivateDescription(true)}
-                      onMouseLeave={() => setShowRSAPrivateDescription(false)}
-                    >
-                      <div className="text-center pt-4 px-4">
-                        {showRSAPrivateDescription ? (
-                          <span>Esta é a chave privada RSA usada para descriptografar dados.</span>
-                        ) : (
-                          <>
-                            -----BEGIN PRIVATE KEY-----<br />
-                            <span className="my-1 inline-block">MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEA</span><br />
-                            <span className="my-1 inline-block">AMIIBCgKCAQEA9j3KDqZPUxnhqZfc8QNn4kW1y0zFhQE</span><br />
-                            <span className="my-1 inline-block">XZ9Rqz/dVuPNDmX3IwZQQUB9cZ+XkqNX5mMULw5xNVHj</span><br />
-                            <span className="my-1 inline-block">PYeIHAkBABD7U8VYR3XfGD9N1Xt8K3DcuDmKz9hN5vY2</span><br />
-                            <span className="my-1 inline-block">WqR4PJH6zv8k9mX3IwZQQUB9cZ+XkqNX5mMULw5xNVHj</span><br />
-                            -----END PRIVATE KEY-----
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  <KeyDisplay 
+                    title="Chave Pública RSA"
+                    content={"-----BEGIN PUBLIC KEY-----\nMIIEowIBAAKCAQEABQEFz5A89cK3ow\nE9TVON1X4Rt1wihx9DzQ9/HmjAQSu\nsLJqGhFdleR75mv1o4cnfOfR7dUwU\nnCdk8dGd2WEdheM5Kth3gVLVNbHg8\nTlFy3DkNLOfkP1K38zjFL2nJhgvQi\n2vGOhS6X8dbsq2zjS3MK+q1xL03ax\nGyZSOEVTuLpTfPXtbfZtiHEwewH/J\nGZSAHiSglHZvGSnsZmWePAFzTh7Gw\n1KSF4TS3D6DqQlY6RHqW5Tu8pK2uG\n5Kct5ihxtE7fZ8nWGu8w4tbHsQlYh-----END PUBLIC KEY-----"}
+                    bgColor="#e0f7fa" 
+                    textColor="#00796b"
+                  />
+                  <KeyDisplay 
+                    title="Chave Privada RSA"
+                    content={"-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA5G8R7TICeY5wO\n1VG7N5R3GV2t1nMepB2xZzZ7vjPje\ncI2G9hLq1IjEGJsET+//sE6km/sz9\n8FbHUb5P5CjOc3Boq7O0X2yE6WiEH\n5Kct5ihxtE7fZ8nWGu8w4tbHsQlYh\nWqSHfyQOQlYzm7xApk3mn1HLqO4Ox\nLE0TxjsiDL11ScBppUhOwhbx4VRFI\n0jZFk5C2MwwsPZmftFJROEqgLxy5O\npt+xlwiJFRmlJwACt6lBGoDZT2tiD\n-----END RSA PRIVATE KEY-----"}
+                    bgColor="#e0f7fa" 
+                    textColor="#00796b"
+                  />
                 </>
               )}
 
-              {/* Container da chave AES */}
-              {aesGenerated && (
-                <div className={keyContainerStyle}>
-                  <h3 className="text-lg font-semibold mb-3 text-blue-800 text-center">
-                    Chave AES
-                  </h3>
-                  <div 
-                    style={{backgroundColor: '#2563eb'}}
-                    className="p-3 rounded font-mono text-base border border-blue-200 text-white flex-1 overflow-hidden text-ellipsis"
-                    onMouseEnter={() => setShowAESDescription(true)}
-                    onMouseLeave={() => setShowAESDescription(false)}
-                  >
-                    <div className="text-center pt-4 px-4">
-                      {showAESDescription ? (
-                        <span>Esta é a chave AES usada para criptografia simétrica.</span>
-                      ) : (
-                        <>
-                          -----BEGIN AES KEY-----<br />
-                          <span className="my-1 inline-block">Xt8K3DcuDmKz9hN5vY2WqR4PJH6zv8k9</span><br />
-                          <span className="my-1 inline-block">mX3IwZQQUB9cZ+XkqNX5mMULw5xNVHjP</span><br />
-                          <span className="my-1 inline-block">YeIHAkBABD7U8VYR3XfGD9N1Xt8K3Dcu</span><br />
-                          <span className="my-1 inline-block">DmKz9hN5vY2WqR4PJH6zv8k9mX3IwZQQ</span><br />
-                          -----END AES KEY-----
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
+              {showAESKey && (
+                <KeyDisplay 
+                  title="Chave AES"
+                  content={"WXd9Hndks72MdP93Lw5T7nYFiJ9kIwe3Dn2DJkd8PlW35XKd74hdlwKJ4MnT8Ld9We9TiJ3Mxkf83lDkwiJW9mfDk3kdmD9tF5MlxkWn3dLJtI9wK7fh8HdJwlKfn3jL7fK3j9kDl29tLmfJn3DkL3Mkf9wdL7n8TkKwnfj4LdF9tK8M4fKDmL37djKfKw8wDn6J4HdL9wJfn8d3lkf2n3JdKw4Lfj6Mn4l9TfJn5dwLKwlxn3kT2D6djfkJ92lTwMn"}
+                  bgColor="#f3e5f5" 
+                  textColor="#6a1b9a"
+                />
               )}
             </div>
           </div>
-
-    
         </div>
       );
     }
   },
-  {
+ {
     id: 'prep',
     title: 'Preparação do Ambiente',
     content: (
