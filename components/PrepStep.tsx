@@ -2,7 +2,6 @@ import { useState, useRef } from "react";
 import { calculateHash } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -22,22 +21,24 @@ export function PrepStep() {
     setFile(selectedFile);
     setFileContent(null);
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const content = reader.result as string;
+    const isViewableFile = /\.(txt|json|md|csv|log|xml|yaml|yml|html|css|js|ts|jsx|tsx)$/i.test(selectedFile.name);
 
-      try {
-        if (content.slice(0, 1000).match(/[\x00-\x7F]/g)) {
-          setFileContent(content);
-        }
-      } catch (e) {
-        setFileContent(null);
-      }
-
-      calculateHash(content).then((hash) => setFileHash(hash));
-    };
-
-    reader.readAsText(selectedFile);
+    if (isViewableFile) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const content = reader.result as string;
+        setFileContent(content);
+        calculateHash(content).then((hash) => setFileHash(hash));
+      };
+      reader.readAsText(selectedFile);
+    } else {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const content = reader.result as ArrayBuffer;
+        calculateHash(content).then((hash) => setFileHash(hash));
+      };
+      reader.readAsArrayBuffer(selectedFile);
+    }
   };
 
   const triggerFileInput = () => {
@@ -178,7 +179,7 @@ export function PrepStep() {
             </div>
           </div>
 
-          {fileContent && (
+          {fileContent && /\.(txt|json|md|csv|log|xml|yaml|yml|html|css|js|ts|jsx|tsx)$/i.test(file?.name || '') && (
             <div className="bg-white rounded-lg border shadow-sm">
               <div className="p-4 border-b flex justify-between items-center">
                 <div className="flex items-center gap-2">
@@ -208,7 +209,7 @@ export function PrepStep() {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span>Arquivo não é texto - visualização não disponível</span>
+                <span>Arquivo não suportado para visualização. Arquivos suportados: .txt, .json, .md, .csv, .log, .xml, .yaml, .yml, .html, .css, .js, .ts, .jsx, .tsx</span>
               </div>
             </div>
           )}

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { Info, Lock, CheckCircle, RefreshCw, ArrowRight, Key } from "lucide-react";
+import { Info, Lock, CheckCircle, RefreshCw, Key } from "lucide-react";
 
 export function ProtectStep() {
   const [isEncrypting, setIsEncrypting] = useState(false);
