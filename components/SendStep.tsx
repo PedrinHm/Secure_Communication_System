@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   LockClosedIcon as LockIcon,
@@ -9,7 +9,7 @@ import {
 } from '@heroicons/react/24/solid';
 import { PencilSquareIcon as SignatureIcon } from '@heroicons/react/24/solid';
 
-export function SendStep() {
+export function SendStep({ setIsStepComplete }: { setIsStepComplete: (isComplete: boolean) => void }) {
   const [enviado, setEnviado] = useState(false);
   const [etapaAtual, setEtapaAtual] = useState(0);
   const [mensagemSucesso, setMensagemSucesso] = useState('');
@@ -55,6 +55,11 @@ export function SendStep() {
       setMostrarResumo(true);
     }, 7500);
   };
+
+  useEffect(() => {
+    // Atualiza o estado de conclusão quando o pacote for enviado
+    setIsStepComplete(enviado && mostrarResumo);
+  }, [enviado, mostrarResumo, setIsStepComplete]);
 
   return (
     <div className="flex flex-col items-center p-6 max-w-4xl mx-auto">

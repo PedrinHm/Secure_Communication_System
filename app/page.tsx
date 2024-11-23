@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 export default function Home() {
   const [currentStepId, setCurrentStepId] = useState<StepId>('config');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isStepComplete, setIsStepComplete] = useState(false);
 
   const currentStepIndex = steps.findIndex(step => step.id === currentStepId);
   const isLastStep = currentStepIndex === steps.length - 1;
@@ -79,30 +80,31 @@ export default function Home() {
 
           <main className="flex-1 flex flex-col">
             <div className="flex-1 p-6 rounded-lg mb-4 bg-white overflow-y-auto max-h-[calc(80vh-80px)]">
-              {ContentComponent && <ContentComponent />}
+              {ContentComponent && <ContentComponent setIsStepComplete={setIsStepComplete} />}
             </div>
             
             <div className="flex justify-between items-center p-4 border-t bg-white sticky bottom-0">
               <Button
-              onClick={handlePrevious}
-              disabled={currentStepIndex === 0}
-              variant="outline"
-              className="font-semibold text-gray-700 hover:bg-gray-100"
-            >
-              Voltar
-            </Button>
+                onClick={handlePrevious}
+                disabled={currentStepIndex === 0}
+                variant="outline"
+                className="font-semibold text-gray-700 hover:bg-gray-100"
+              >
+                Voltar
+              </Button>
 
-            <Button
-              onClick={handleNext}
-              variant="primary"
-              className={`font-semibold ${
-                isLastStep
-                  ? "bg-green-500 text-white hover:bg-green-600"
-                  : "bg-blue-500 text-white hover:bg-blue-600"
-              }`}
-            >
-              {isLastStep ? "Concluir" : "Avançar"}
-            </Button>
+              <Button
+                onClick={handleNext}
+                disabled={!isStepComplete}
+                variant="primary"
+                className={`font-semibold ${
+                  isLastStep
+                    ? "bg-green-500 text-white hover:bg-green-600"
+                    : "bg-blue-500 text-white hover:bg-blue-600"
+                }`}
+              >
+                {isLastStep ? "Concluir" : "Avançar"}
+              </Button>
             </div>
           </main>
         </div>

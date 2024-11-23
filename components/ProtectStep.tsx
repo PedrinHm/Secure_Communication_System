@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Info, Lock, CheckCircle, RefreshCw, Key } from "lucide-react";
 
-export function ProtectStep() {
+export function ProtectStep({ setIsStepComplete }: { setIsStepComplete: (isComplete: boolean) => void }) {
   const [isEncrypting, setIsEncrypting] = useState(false);
   const [isEncrypted, setIsEncrypted] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
@@ -13,6 +13,11 @@ export function ProtectStep() {
   const [showDetails, setShowDetails] = useState(false);
   const [encryptionSteps, setEncryptionSteps] = useState<string[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
+
+  useEffect(() => {
+    // Atualiza o estado de conclusão quando a chave estiver protegida
+    setIsStepComplete(isEncrypted);
+  }, [isEncrypted, setIsStepComplete]);
 
   const handleEncryptKey = async () => {
     setIsEncrypting(true);

@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaFileAlt, FaLock, FaSignature } from 'react-icons/fa';
 
-export function SignStep() {
+export function SignStep({ setIsStepComplete }: { setIsStepComplete: (isComplete: boolean) => void }) {
   const [isSigningAnimating, setIsSigningAnimating] = useState(false);
   const [isEncryptingAnimating, setIsEncryptingAnimating] = useState(false);
   const [isSigned, setIsSigned] = useState(false);
@@ -33,6 +33,11 @@ export function SignStep() {
     if (isEncryptingAnimating) return "Cifrando o arquivo...";
     return "Arquivo assinado e cifrado com sucesso!";
   };
+
+  useEffect(() => {
+    // Atualiza o estado de conclusão quando o arquivo estiver assinado e cifrado
+    setIsStepComplete(isSigned && isEncrypted);
+  }, [isSigned, isEncrypted, setIsStepComplete]);
 
   return (
     <div className="flex flex-col items-center p-6 space-y-8">

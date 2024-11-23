@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CheckIcon, KeyIcon, DocumentIcon, ShieldCheckIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 
@@ -255,7 +255,7 @@ function DetailedStep({ completed, step, currentStep, isProcessing }: DetailedSt
     </motion.div>
   );
 }
-export function VerifyStep() {
+export function VerifyStep({ setIsStepComplete }: { setIsStepComplete: (isComplete: boolean) => void }) {
   const [privateKey, setPrivateKey] = useState('');
   const [steps, setSteps] = useState({
     aesRecovery: { status: 'idle' as 'idle' | 'processing' | 'success' | 'error' },
@@ -322,6 +322,12 @@ export function VerifyStep() {
       signatureVerification: { status: 'success' }
     }));
   };
+
+  useEffect(() => {
+    // Atualiza o estado de conclusão quando todas as verificações estiverem concluídas
+    const allStepsCompleted = Object.values(steps).every(step => step.status === 'success');
+    setIsStepComplete(allStepsCompleted);
+  }, [steps, setIsStepComplete]);
 
   return (
     <div className="flex flex-col gap-6 p-6">

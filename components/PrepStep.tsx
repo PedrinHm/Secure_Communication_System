@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { calculateHash } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,12 +7,35 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/components/ui/use-toast";
 
-export function PrepStep() {
+export function PrepStep({ setIsStepComplete }: { setIsStepComplete: (isComplete: boolean) => void }) {
   const [publicKey, setPublicKey] = useState<string>('');
   const [file, setFile] = useState<File | null>(null);
   const [fileContent, setFileContent] = useState<string | null>(null);
   const [fileHash, setFileHash] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const isPublicKeyValid = publicKey.trim().length > 0;
+    const isFileValid = !!file;
+    
+    // Só completa o step se ambos estiverem prontos
+    setIsStepComplete(isPublicKeyValid && isFileValid);
+
+    // Feedback visual opcional para o usuário
+    if (isPublicKeyValid && !isFileValid) {
+      toast({
+        title: "Quase lá!",
+        description: "Agora selecione um arquivo para continuar.",
+        variant: "info",
+      });
+    } else if (!isPublicKeyValid && isFileValid) {
+      toast({
+        title: "Quase lá!",
+        description: "Agora insira a chave pública para continuar.",
+        variant: "info",
+      });
+    }
+  }, [file, publicKey, setIsStepComplete]);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -49,10 +72,10 @@ export function PrepStep() {
     const value = event.target.value;
     setPublicKey(value);
     
-    if (value.includes('BEGIN PUBLIC KEY')) {
+    if (value.trim().length > 0) {
       toast({
         title: "Sucesso!",
-        description: "Chave pública válida inserida.",
+        description: "Chave pública inserida.",
         variant: "success",
       });
     }
@@ -69,7 +92,7 @@ export function PrepStep() {
           <div className="bg-white p-6 rounded-lg border shadow-sm">
             <div className="mb-4">
               <Label className="text-base font-semibold text-gray-700 flex items-center gap-2">
-                1. Chave Pública do Destinatário
+                Chave Pública do Destinatário
                 <Tooltip>
                   <TooltipTrigger>
                     <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,7 +113,7 @@ export function PrepStep() {
               />
             </div>
             
-            {publicKey.includes('BEGIN PUBLIC KEY') && (
+            {publicKey.trim().length > 0 && (
               <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md flex items-center gap-2">
                 <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />

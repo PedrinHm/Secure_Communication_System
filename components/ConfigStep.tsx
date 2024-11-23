@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaKey } from "react-icons/fa";
 import { MdSecurity } from "react-icons/md";
 import { Button } from "@/components/ui/button";
 import { KeyGenerationLoading } from "@/components/KeyGenerationLoading";
 import { KeyDisplay } from "@/components/KeyDisplay";
 
-export function ConfigStep() {
+export function ConfigStep({ setIsStepComplete }: { setIsStepComplete: (isComplete: boolean) => void }) {
   const [showRSALoading, setShowRSALoading] = useState(false);
   const [showAESLoading, setShowAESLoading] = useState(false);
   const [rsaGenerated, setRsaGenerated] = useState(false);
@@ -26,6 +26,11 @@ export function ConfigStep() {
       setAesGenerated(true);
     }, 2000);
   };
+
+  useEffect(() => {
+    // Atualiza o estado de conclusão quando ambas as chaves forem geradas
+    setIsStepComplete(rsaGenerated && aesGenerated);
+  }, [rsaGenerated, aesGenerated, setIsStepComplete]);
 
   return (
     <div className="space-y-8 h-full flex flex-col">
