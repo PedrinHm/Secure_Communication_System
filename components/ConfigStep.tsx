@@ -29,13 +29,13 @@ export function ConfigStep() {
 
   return (
     <div className="space-y-8 h-full flex flex-col">
-      <h2 className="text-xl font-bold mb-4">Configuração Inicial</h2>
+      <h2 className="text-xl font-bold">Configuração Inicial</h2>
 
       <div className="flex flex-col gap-4 h-full">
         {/* Botão RSA */}
         <Button
           onClick={handleGenerateRSA}
-          className={`gap-6 max-w-[280px] mb-4 ${
+          className={`gap-6 max-w-[280px] ${
             rsaGenerated ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
           }`}
           size="lg"
@@ -48,7 +48,7 @@ export function ConfigStep() {
         {/* Botão AES */}
         <Button
           onClick={handleGenerateAES}
-          className={`gap-6 max-w-[280px] mb-4 ${
+          className={`gap-6 max-w-[280px] ${
             aesGenerated ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
           }`}
           size="lg"
