@@ -1,29 +1,40 @@
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'; 
 import { FaFileAlt, FaLock, FaSignature } from 'react-icons/fa';
 
-export function SignStep({ setIsStepComplete }: { setIsStepComplete: (isComplete: boolean) => void }) {
-  const [isSigningAnimating, setIsSigningAnimating] = useState(false);
-  const [isEncryptingAnimating, setIsEncryptingAnimating] = useState(false);
-  const [isSigned, setIsSigned] = useState(false);
-  const [isEncrypted, setIsEncrypted] = useState(false);
-  const [showSignInfo, setShowSignInfo] = useState(false);
-  const [showEncryptInfo, setShowEncryptInfo] = useState(false);
+export function SignStep({ stepState, setStepState, setIsStepComplete }) {
+  const {
+    isSigningAnimating,
+    isEncryptingAnimating,
+    isSigned,
+    isEncrypted,
+    showSignInfo,
+    showEncryptInfo,
+  } = stepState; 
 
   const startSigningAnimation = () => {
-    setIsSigningAnimating(true);
+    setStepState({ isSigningAnimating: true });
     setTimeout(() => {
-      setIsSigningAnimating(false);
-      setIsSigned(true);
+      setStepState({ isSigningAnimating: false, isSigned: true });
     }, 2000);
   };
 
   const startEncryptingAnimation = () => {
-    setIsEncryptingAnimating(true);
+    setStepState({ isEncryptingAnimating: true });
     setTimeout(() => {
-      setIsEncryptingAnimating(false);
-      setIsEncrypted(true);
+      setStepState({ isEncryptingAnimating: false, isEncrypted: true });
     }, 2000);
+  };
+
+  const handleReset = () => {
+    setStepState({
+      isSigningAnimating: false,
+      isEncryptingAnimating: false,
+      isSigned: false,
+      isEncrypted: false,
+      showSignInfo: false,
+      showEncryptInfo: false,
+    });
   };
 
   const getStatusText = () => {
@@ -34,15 +45,6 @@ export function SignStep({ setIsStepComplete }: { setIsStepComplete: (isComplete
     return "Arquivo assinado e cifrado com sucesso!";
   };
 
-  const handleReset = () => {
-    setIsSigningAnimating(false);
-    setIsEncryptingAnimating(false);
-    setIsSigned(false);
-    setIsEncrypted(false);
-    setShowSignInfo(false);
-    setShowEncryptInfo(false);
-  };
-
   useEffect(() => {
     // Atualiza o estado de conclusão quando o arquivo estiver assinado e cifrado
     setIsStepComplete(isSigned && isEncrypted);
@@ -50,14 +52,13 @@ export function SignStep({ setIsStepComplete }: { setIsStepComplete: (isComplete
 
   return (
     <div className="flex flex-col items-center p-6 space-y-8">
-      {/* Container principal com largura fixa */}
       <div className="w-full max-w-4xl grid grid-cols-3 gap-4">
         {/* Coluna da esquerda - Assinatura */}
         <div className="flex flex-col items-center">
           <button
             onClick={() => {
               startSigningAnimation();
-              setShowSignInfo(true);
+              setStepState({ showSignInfo: true });
             }}
             className="w-48 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={isSigningAnimating || isEncryptingAnimating || isSigned}
@@ -68,9 +69,9 @@ export function SignStep({ setIsStepComplete }: { setIsStepComplete: (isComplete
             <div className="mt-2 bg-green-50 p-4 rounded-lg">
               <h3 className="font-semibold text-green-700 mb-2">Assinatura Digital</h3>
               <p className="text-sm text-green-600">
-                A assinatura digital garante a autenticidade do documento, 
-                confirmando que ele foi realmente criado por você e não foi 
-                alterado desde sua criação. Utiliza criptografia assimétrica 
+                A assinatura digital garante a autenticidade do documento,
+                confirmando que ele foi realmente criado por você e não foi
+                alterado desde sua criação. Utiliza criptografia assimétrica
                 com sua chave privada.
               </p>
             </div>
@@ -88,11 +89,11 @@ export function SignStep({ setIsStepComplete }: { setIsStepComplete: (isComplete
               className="absolute text-green-600 text-4xl"
               initial={{ x: -100, y: -100, opacity: 0 }}
               animate={
-                isSigningAnimating 
+                isSigningAnimating
                   ? { x: 0, y: 0, opacity: 1 }
-                  : isSigned 
-                    ? { x: -30, y: -30, opacity: 1 }
-                    : { x: -100, y: -100, opacity: 0 }
+                  : isSigned
+                  ? { x: -30, y: -30, opacity: 1 }
+                  : { x: -100, y: -100, opacity: 0 }
               }
               transition={{ duration: 1 }}
             >
@@ -106,8 +107,8 @@ export function SignStep({ setIsStepComplete }: { setIsStepComplete: (isComplete
                 isEncryptingAnimating
                   ? { x: 0, y: 0, opacity: 1 }
                   : isEncrypted
-                    ? { x: 30, y: -30, opacity: 1 }
-                    : { x: 100, y: -100, opacity: 0 }
+                  ? { x: 30, y: -30, opacity: 1 }
+                  : { x: 100, y: -100, opacity: 0 }
               }
               transition={{ duration: 1 }}
             >
@@ -121,7 +122,7 @@ export function SignStep({ setIsStepComplete }: { setIsStepComplete: (isComplete
           <button
             onClick={() => {
               startEncryptingAnimation();
-              setShowEncryptInfo(true);
+              setStepState({ showEncryptInfo: true });
             }}
             className="w-48 px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={isSigningAnimating || isEncryptingAnimating || !isSigned || isEncrypted}
@@ -132,8 +133,8 @@ export function SignStep({ setIsStepComplete }: { setIsStepComplete: (isComplete
             <div className="mt-2 bg-yellow-50 p-4 rounded-lg">
               <h3 className="font-semibold text-yellow-700 mb-2">Cifragem</h3>
               <p className="text-sm text-yellow-600">
-                A cifragem protege o conteúdo do arquivo, tornando-o ilegível 
-                para quem não possui a chave de descriptografia. Apenas o 
+                A cifragem protege o conteúdo do arquivo, tornando-o ilegível
+                para quem não possui a chave de descriptografia. Apenas o
                 destinatário com a chave correta poderá acessar o conteúdo.
               </p>
             </div>
@@ -141,40 +142,9 @@ export function SignStep({ setIsStepComplete }: { setIsStepComplete: (isComplete
         </div>
       </div>
 
-      {/* Status e detalhes técnicos permanecem iguais */}
       <p className="text-center text-gray-700">
         {getStatusText()}
       </p>
-
-      <div className="bg-white shadow-md rounded-lg p-4 w-full max-w-md border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">Detalhes Técnicos</h3>
-        
-        <div className="space-y-2">
-          {/* Hash */}
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600 font-medium">Hash:</span>
-            <span className={`font-mono ${isSigned ? 'text-green-600' : 'text-gray-400'}`}>
-              {isSigned ? "8f4e8d9c7b6a5..." : "Aguardando assinatura..."}
-            </span>
-          </div>
-
-          {/* Assinatura */}
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600 font-medium">Assinatura:</span>
-            <span className={`${isSigned ? 'text-green-600' : 'text-gray-400'}`}>
-              {isSigned ? "RSA-256" : "Pendente"}
-            </span>
-          </div>
-
-          {/* Nome cifrado */}
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600 font-medium">Nome cifrado:</span>
-            <span className={`font-mono ${isEncrypted ? 'text-yellow-600' : 'text-gray-400'}`}>
-              {isEncrypted ? "Y8x&%7#F.txt" : "arquivo_original.txt"}
-            </span>
-          </div>
-        </div>
-      </div>
 
       {(isSigned && isEncrypted) && (
         <motion.div
@@ -186,9 +156,6 @@ export function SignStep({ setIsStepComplete }: { setIsStepComplete: (isComplete
             onClick={handleReset}
             className="flex items-center gap-2 px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
             Repetir
           </button>
         </motion.div>

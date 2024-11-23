@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   LockClosedIcon as LockIcon,
@@ -9,59 +9,67 @@ import {
 } from '@heroicons/react/24/solid';
 import { PencilSquareIcon as SignatureIcon } from '@heroicons/react/24/solid';
 
-export function SendStep({ setIsStepComplete }: { setIsStepComplete: (isComplete: boolean) => void }) {
-  const [enviado, setEnviado] = useState(false);
-  const [etapaAtual, setEtapaAtual] = useState(0);
-  const [mensagemSucesso, setMensagemSucesso] = useState('');
-  const [iniciarMovimento, setIniciarMovimento] = useState(false);
-  const [mostrarResumo, setMostrarResumo] = useState(false);
-  
-  const garantias = [
-    {
-      icon: LockIcon,
-      texto: "Confidencialidade através da cifragem",
-      delay: 0.8
-    },
-    {
-      icon: SignatureIcon,
-      texto: "Autenticidade através da assinatura digital",
-      delay: 1.6
-    },
-    {
-      icon: KeyIcon,
-      texto: "Integridade através do hash",
-      delay: 2.4
-    }
-  ];
+export function SendStep({ stepState, setStepState, setIsStepComplete }) {
+  const {
+    enviado,
+    etapaAtual,
+    mensagemSucesso,
+    iniciarMovimento,
+    mostrarResumo,
+    garantias = [
+      {
+        icon: LockIcon,
+        texto: "Confidencialidade através da cifragem",
+        delay: 0.8
+      },
+      {
+        icon: SignatureIcon,
+        texto: "Autenticidade através da assinatura digital",
+        delay: 1.6
+      },
+      {
+        icon: KeyIcon,
+        texto: "Integridade através do hash",
+        delay: 2.4
+      }
+    ],
+  } = stepState;
 
   const handleEnvio = () => {
-    setEnviado(true);
-    
+    setStepState({ enviado: true, etapaAtual: 0 });
+
     // Animar as garantias sequencialmente
     garantias.forEach((_, index) => {
       setTimeout(() => {
-        setEtapaAtual(index + 1);
+        setStepState((prev) => ({
+          ...prev,
+          etapaAtual: index + 1,
+        }));
       }, index * 800);
     });
-    
+
     // Iniciar movimento apenas após a última garantia ser adicionada
     setTimeout(() => {
-      setIniciarMovimento(true);
+      setStepState({ iniciarMovimento: true });
     }, 4000);
 
-    // Exibir mensagem e resumo apenas após o pacote chegar
+    // Exibir mensagem e resumo após o pacote chegar
     setTimeout(() => {
-      setMensagemSucesso('Pacote enviado com sucesso (e segurança) para o Professor João!');
-      setMostrarResumo(true);
+      setStepState({
+        mensagemSucesso: 'Pacote enviado com sucesso (e segurança) para o Professor João!',
+        mostrarResumo: true,
+      });
     }, 7500);
   };
 
   const handleReset = () => {
-    setEnviado(false);
-    setEtapaAtual(0);
-    setMensagemSucesso('');
-    setIniciarMovimento(false);
-    setMostrarResumo(false);
+    setStepState({
+      enviado: false,
+      etapaAtual: 0,
+      mensagemSucesso: '',
+      iniciarMovimento: false,
+      mostrarResumo: false,
+    });
   };
 
   useEffect(() => {
@@ -77,7 +85,6 @@ export function SendStep({ setIsStepComplete }: { setIsStepComplete: (isComplete
 
       <div className="bg-white p-6 rounded-lg shadow-md w-full mb-8">
         <h3 className="font-semibold mb-4">Componentes do Pacote</h3>
-        
         <div className="flex flex-col">
           <div className="flex gap-12 mb-6">
             <ul className="space-y-3 flex-1">
@@ -128,9 +135,8 @@ export function SendStep({ setIsStepComplete }: { setIsStepComplete: (isComplete
           <StudentIcon className="w-12 h-12" />
           <span className="text-sm text-gray-600 mt-1">Aluno</span>
         </div>
-        
+
         <div className="flex-1 mx-4 relative">
-          {/* Linha pontilhada */}
           <svg
             className="w-full absolute top-1/2 -translate-y-1/2"
             height="20"
@@ -158,41 +164,23 @@ export function SendStep({ setIsStepComplete }: { setIsStepComplete: (isComplete
               markerEnd="url(#arrowhead)"
             />
           </svg>
-          
+
           {enviado && (
             <motion.div
               initial={{ left: 0 }}
               animate={{ left: iniciarMovimento ? 'calc(100% - 16px)' : 0 }}
-              transition={{ 
+              transition={{
                 duration: 3,
                 ease: "linear",
               }}
               className="absolute top-0 -translate-y-full -mt-2"
               style={{ position: 'absolute' }}
             >
-              <div className="relative">
-                <PackageIcon className="w-8 h-8 text-blue-500" />
-                
-                {garantias.map((garantia, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: 0 }}
-                    animate={etapaAtual > index ? { 
-                      opacity: 1, 
-                      x: -20 + (index * 20 - ((garantias.length - 1) * 10))
-                    } : {}}
-                    transition={{ duration: 0.3, delay: garantia.delay - 0.3 }}
-                    className="absolute top-0 left-1/2 -translate-y-full -mt-1 w-4 h-4"
-                    style={{ zIndex: index + 1 }}
-                  >
-                    <garantia.icon className="w-4 h-4 text-green-500" />
-                  </motion.div>
-                ))}
-              </div>
+              <PackageIcon className="w-8 h-8 text-blue-500" />
             </motion.div>
           )}
         </div>
-        
+
         <div className="flex flex-col items-center">
           <TeacherIcon className="w-12 h-12" />
           <span className="text-sm text-gray-600 mt-1">Professor</span>

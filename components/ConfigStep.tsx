@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { motion } from 'framer-motion';
+import { useEffect } from "react";
+import { motion } from "framer-motion";
 import { FaKey } from "react-icons/fa";
 import { MdSecurity } from "react-icons/md";
 import { Button } from "@/components/ui/button";
@@ -7,35 +7,32 @@ import { KeyGenerationLoading } from "@/components/KeyGenerationLoading";
 import { KeyDisplay } from "@/components/KeyDisplay";
 import { RefreshCw } from "lucide-react";
 
-export function ConfigStep({ setIsStepComplete }: { setIsStepComplete: (isComplete: boolean) => void }) {
-  const [showRSALoading, setShowRSALoading] = useState(false);
-  const [showAESLoading, setShowAESLoading] = useState(false);
-  const [rsaGenerated, setRsaGenerated] = useState(false);
-  const [aesGenerated, setAesGenerated] = useState(false);
-  const [showRSAKeys, setShowRSAKeys] = useState(false);
-  const [showAESKey, setShowAESKey] = useState(false);
+export function ConfigStep({ stepState, setStepState, setIsStepComplete }) {
+  const { rsaGenerated, aesGenerated, showRSALoading, showAESLoading, showRSAKeys, showAESKey } = stepState;
 
   const handleGenerateRSA = () => {
-    setShowRSALoading(true);
+    setStepState({ showRSALoading: true });
     setTimeout(() => {
-      setRsaGenerated(true);
+      setStepState({ rsaGenerated: true, showRSALoading: false, showRSAKeys: true });
     }, 2000);
   };
 
   const handleGenerateAES = () => {
-    setShowAESLoading(true);
+    setStepState({ showAESLoading: true });
     setTimeout(() => {
-      setAesGenerated(true);
+      setStepState({ aesGenerated: true, showAESLoading: false, showAESKey: true });
     }, 2000);
   };
 
   const handleReset = () => {
-    setShowRSALoading(false);
-    setShowAESLoading(false);
-    setRsaGenerated(false);
-    setAesGenerated(false);
-    setShowRSAKeys(false);
-    setShowAESKey(false);
+    setStepState({
+      rsaGenerated: false,
+      aesGenerated: false,
+      showRSALoading: false,
+      showAESLoading: false,
+      showRSAKeys: false,
+      showAESKey: false,
+    });
   };
 
   useEffect(() => {
@@ -48,11 +45,8 @@ export function ConfigStep({ setIsStepComplete }: { setIsStepComplete: (isComple
       <h2 className="text-xl font-bold">Configuração Inicial</h2>
 
       <div className="flex flex-col gap-4 h-full">
-        {/* Container para os botões e reset */}
         <div className="flex justify-between items-start">
-          {/* Container para os botões de gerar chaves */}
           <div className="flex flex-col gap-4">
-            {/* Botão RSA */}
             <Button
               onClick={handleGenerateRSA}
               className={`gap-6 max-w-[280px] ${
@@ -65,7 +59,6 @@ export function ConfigStep({ setIsStepComplete }: { setIsStepComplete: (isComple
               <span>{rsaGenerated ? "Chaves RSA Geradas" : "Gerar Par de Chaves RSA"}</span>
             </Button>
 
-            {/* Botão AES */}
             <Button
               onClick={handleGenerateAES}
               className={`gap-6 max-w-[280px] ${
@@ -79,17 +72,9 @@ export function ConfigStep({ setIsStepComplete }: { setIsStepComplete: (isComple
             </Button>
           </div>
 
-          {/* Botão de Reset */}
           {(rsaGenerated && aesGenerated) && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-            >
-              <Button
-                variant="outline"
-                onClick={handleReset}
-                className="hover:bg-gray-50"
-              >
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+              <Button variant="outline" onClick={handleReset} className="hover:bg-gray-50">
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Repetir
               </Button>
@@ -97,29 +82,24 @@ export function ConfigStep({ setIsStepComplete }: { setIsStepComplete: (isComple
           )}
         </div>
 
-        {/* Loading RSA */}
         {showRSALoading && (
           <KeyGenerationLoading
             type="RSA"
             onComplete={() => {
-              setShowRSALoading(false);
-              setShowRSAKeys(true);
+              setStepState({ showRSALoading: false, showRSAKeys: true });
             }}
           />
         )}
 
-        {/* Loading AES */}
         {showAESLoading && (
           <KeyGenerationLoading
             type="AES"
             onComplete={() => {
-              setShowAESLoading(false);
-              setShowAESKey(true);
+              setStepState({ showAESLoading: false, showAESKey: true });
             }}
           />
         )}
 
-        {/* Exibição das chaves RSA e AES */}
         <div className="flex flex-wrap gap-8 mt-2 justify-center">
           {showRSAKeys && (
             <>

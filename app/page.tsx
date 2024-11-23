@@ -1,17 +1,23 @@
-'use client'
+'use client';
 import { useState } from 'react';
 import { ProcessStep } from "@/components/ProcessStep";
 import { steps } from "@/config/steps";
 import { StepId } from "@/types/steps";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button"; 
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const [currentStepId, setCurrentStepId] = useState<StepId>('config');
   const [showSuccess, setShowSuccess] = useState(false);
-  const [isStepComplete, setIsStepComplete] = useState(false);
+  const [isStepComplete, setIsStepComplete] = useState(false); // Mover para fora do stepStates
+  const [stepStates, setStepStates] = useState(() => {
+    const initialState = {};
+    steps.forEach((step) => {
+      initialState[step.id] = {};
+    });
+    return initialState;
+  });
 
-  const currentStepIndex = steps.findIndex(step => step.id === currentStepId);
+  const currentStepIndex = steps.findIndex((step) => step.id === currentStepId);
   const isLastStep = currentStepIndex === steps.length - 1;
 
   const handleNext = () => {
@@ -35,7 +41,7 @@ export default function Home() {
     }
   };
 
-  const currentStep = steps.find(step => step.id === currentStepId);
+  const currentStep = steps.find((step) => step.id === currentStepId);
   const ContentComponent = currentStep?.content || null;
 
   return (
@@ -46,9 +52,7 @@ export default function Home() {
             <div className="text-green-500 text-xl font-bold mb-2">
               ✓ Processo Concluído com Sucesso!
             </div>
-            <p className="text-gray-600">
-              Voltando ao início...
-            </p>
+            <p className="text-gray-600">Voltando ao início...</p>
           </div>
         </div>
       )}
@@ -63,13 +67,13 @@ export default function Home() {
           <nav className="w-64 border-r-2 border-gray-200 pr-6">
             <ul className="h-full flex flex-col justify-between py-8">
               {steps.map((step) => (
-                <ProcessStep 
+                <ProcessStep
                   key={step.id}
                   title={step.title}
                   status={
                     step.id === currentStepId
                       ? 'current'
-                      : currentStepIndex > steps.findIndex(s => s.id === step.id)
+                      : currentStepIndex > steps.findIndex((s) => s.id === step.id)
                       ? 'completed'
                       : 'pending'
                   }
@@ -80,9 +84,23 @@ export default function Home() {
 
           <main className="flex-1 flex flex-col">
             <div className="flex-1 p-6 rounded-lg mb-4 bg-white overflow-y-auto max-h-[calc(80vh-80px)]">
-              {ContentComponent && <ContentComponent setIsStepComplete={setIsStepComplete} />}
+              {ContentComponent && (
+                <ContentComponent
+                  stepState={stepStates[currentStepId]} 
+                  setStepState={(newState) =>
+                    setStepStates((prev) => ({
+                      ...prev,
+                      [currentStepId]: {
+                        ...prev[currentStepId],
+                        ...newState,
+                      },
+                    }))
+                  }
+                  setIsStepComplete={setIsStepComplete} // Passar a função corretamente
+                />
+              )}
             </div>
-            
+
             <div className="flex justify-between items-center p-4 border-t bg-white sticky bottom-0">
               <Button
                 onClick={handlePrevious}
@@ -95,15 +113,15 @@ export default function Home() {
 
               <Button
                 onClick={handleNext}
-                disabled={!isStepComplete}
+                disabled={!isStepComplete} // Usar isStepComplete diretamente
                 variant="primary"
                 className={`font-semibold ${
                   isLastStep
-                    ? "bg-green-500 text-white hover:bg-green-600"
-                    : "bg-blue-500 text-white hover:bg-blue-600"
+                    ? 'bg-green-500 text-white hover:bg-green-600'
+                    : 'bg-blue-500 text-white hover:bg-blue-600'
                 }`}
               >
-                {isLastStep ? "Concluir" : "Avançar"}
+                {isLastStep ? 'Concluir' : 'Avançar'}
               </Button>
             </div>
           </main>

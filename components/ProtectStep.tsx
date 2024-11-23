@@ -3,26 +3,25 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Info, Lock, CheckCircle, RefreshCw, Key } from "lucide-react";
 
-export function ProtectStep({ setIsStepComplete }: { setIsStepComplete: (isComplete: boolean) => void }) {
-  const [isEncrypting, setIsEncrypting] = useState(false);
-  const [isEncrypted, setIsEncrypted] = useState(false);
-  const [showInfo, setShowInfo] = useState(false);
-  const [originalKeySize] = useState(32); // Tamanho da chave AES (256 bits = 32 bytes)
-  const [encryptedKeySize, setEncryptedKeySize] = useState<number | null>(null);
-  const [recipientName] = useState("Professor João");
-  const [showDetails, setShowDetails] = useState(false);
-  const [encryptionSteps, setEncryptionSteps] = useState<string[]>([]);
-  const [currentStep, setCurrentStep] = useState(0);
-
-  useEffect(() => {
-    // Atualiza o estado de conclusão quando a chave estiver protegida
-    setIsStepComplete(isEncrypted);
-  }, [isEncrypted, setIsStepComplete]);
+export function ProtectStep({ stepState, setStepState, setIsStepComplete }) {
+  const {
+    isEncrypting,
+    isEncrypted,
+    showInfo,
+    encryptedKeySize,
+    showDetails,
+    encryptionSteps,
+    currentStep,
+    recipientName = "Professor João",
+    originalKeySize = 32, // Tamanho da chave AES (256 bits = 32 bytes)
+  } = stepState;
 
   const handleEncryptKey = async () => {
-    setIsEncrypting(true);
-    setEncryptionSteps([]);
-    setCurrentStep(0);
+    setStepState({
+      isEncrypting: true,
+      encryptionSteps: [],
+      currentStep: 0,
+    });
 
     const steps = [
       "Gerando padding PKCS#1 v1.5 para a chave AES...",
@@ -34,12 +33,14 @@ export function ProtectStep({ setIsStepComplete }: { setIsStepComplete: (isCompl
       "Verificando integridade da chave cifrada...",
     ];
 
-    // Simula cada etapa do processo de cifragem
     for (let i = 0; i < steps.length; i++) {
       await new Promise((resolve) => {
         setTimeout(() => {
-          setEncryptionSteps(prev => [...prev, steps[i]]);
-          setCurrentStep(i + 1);
+          setStepState((prev) => ({
+            ...prev,
+            encryptionSteps: [...prev.encryptionSteps, steps[i]],
+            currentStep: i + 1,
+          }));
           resolve(null);
         }, 800); // Cada etapa leva 800ms
       });
@@ -47,18 +48,33 @@ export function ProtectStep({ setIsStepComplete }: { setIsStepComplete: (isCompl
 
     // Finaliza o processo
     setTimeout(() => {
-      setEncryptedKeySize(256); // Tamanho típico de uma chave RSA-2048 cifrada
-      setIsEncrypting(false);
-      setIsEncrypted(true);
+      setStepState({
+        encryptedKeySize: 256, // Tamanho típico de uma chave RSA-2048 cifrada
+        isEncrypting: false,
+        isEncrypted: true,
+      });
     }, 1000);
   };
 
   const handleReset = () => {
-    setIsEncrypting(false);
-    setIsEncrypted(false);
-    setShowInfo(false);
-    setEncryptedKeySize(null);
+    setStepState({
+      isEncrypting: false,
+      isEncrypted: false,
+      showInfo: false,
+      encryptedKeySize: null,
+      encryptionSteps: [],
+      currentStep: 0,
+    });
   };
+
+  const toggleDetails = () => {
+    setStepState({ showDetails: !showDetails });
+  };
+
+  // Atualiza o estado de conclusão
+  useEffect(() => {
+    setIsStepComplete(isEncrypted);
+  }, [isEncrypted, setIsStepComplete]);
 
   return (
     <motion.div 
@@ -66,7 +82,6 @@ export function ProtectStep({ setIsStepComplete }: { setIsStepComplete: (isCompl
       animate={{ opacity: 1 }}
       className="max-w-3xl mx-auto space-y-6 p-6"
     >
-      {/* Cabeçalho simplificado */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -76,7 +91,7 @@ export function ProtectStep({ setIsStepComplete }: { setIsStepComplete: (isCompl
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowDetails(!showDetails)}
+            onClick={toggleDetails}
             className="hover:bg-blue-50"
           >
             <Info className="w-4 h-4 mr-2" />
@@ -85,7 +100,6 @@ export function ProtectStep({ setIsStepComplete }: { setIsStepComplete: (isCompl
         </div>
       </div>
 
-      {/* Card principal com animação suave */}
       <AnimatePresence>
         {showDetails && (
           <motion.div
@@ -111,10 +125,8 @@ export function ProtectStep({ setIsStepComplete }: { setIsStepComplete: (isCompl
         )}
       </AnimatePresence>
 
-      {/* Área central com visualização do processo */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
         <div className="flex flex-col items-center space-y-8">
-          {/* Ícone da chave sem animação */}
           <div>
             <Key className={`w-16 h-16 ${isEncrypted ? 'text-green-500' : 'text-blue-500'}`} />
           </div>
@@ -123,7 +135,7 @@ export function ProtectStep({ setIsStepComplete }: { setIsStepComplete: (isCompl
             size="lg"
             onClick={() => {
               handleEncryptKey();
-              setShowInfo(true);
+              setStepState({ showInfo: true });
             }}
             disabled={isEncrypting || isEncrypted}
             className={`w-64 ${isEncrypted ? 'bg-green-500 hover:bg-green-600' : ''}`}
@@ -146,7 +158,6 @@ export function ProtectStep({ setIsStepComplete }: { setIsStepComplete: (isCompl
             )}
           </Button>
 
-          {/* Status e métricas */}
           <AnimatePresence>
             {showInfo && (
               <motion.div
@@ -155,7 +166,6 @@ export function ProtectStep({ setIsStepComplete }: { setIsStepComplete: (isCompl
                 exit={{ opacity: 0, y: -20 }}
                 className="w-full space-y-6"
               >
-                {/* Card de status com passos da cifragem */}
                 <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                   <div className="flex items-center space-x-3 mb-4">
                     <div className={`rounded-full p-2 ${
@@ -180,72 +190,19 @@ export function ProtectStep({ setIsStepComplete }: { setIsStepComplete: (isCompl
                       </p>
                     </div>
                   </div>
-
-                  {/* Passos da cifragem */}
-                  {(isEncrypting || isEncrypted) && (
-                    <div className="space-y-2 mt-4 border-t pt-4">
-                      {encryptionSteps.map((step, index) => (
-                        <motion.div
-                          key={index}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          className="flex items-center space-x-2"
-                        >
-                          <CheckCircle className="w-4 h-4 text-green-500" />
-                          <span className="text-sm text-gray-600">{step}</span>
-                        </motion.div>
-                      ))}
-                      {isEncrypting && currentStep < 7 && (
-                        <motion.div
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          className="flex items-center space-x-2"
-                        >
-                          <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />
-                          <span className="text-sm text-blue-600">Processando...</span>
-                        </motion.div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Comparação visual */}
-                <div className="space-y-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Tamanho Original</span>
-                    <span className="font-medium">{originalKeySize} bytes</span>
-                  </div>
-                  <motion.div
-                    className="h-2 bg-blue-200 rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: "100%" }}
-                  >
-                    <motion.div
-                      className="h-full bg-blue-500 rounded-full"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${(originalKeySize/256)*100}%` }}
-                    />
-                  </motion.div>
-
-                  {isEncrypted && (
-                    <>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Tamanho Cifrado</span>
-                        <span className="font-medium">{encryptedKeySize} bytes</span>
-                      </div>
+                  <div className="space-y-2 mt-4 border-t pt-4">
+                    {encryptionSteps.map((step, index) => (
                       <motion.div
-                        className="h-2 bg-green-200 rounded-full"
-                        initial={{ width: 0 }}
-                        animate={{ width: "100%" }}
+                        key={index}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="flex items-center space-x-2"
                       >
-                        <motion.div
-                          className="h-full bg-green-500 rounded-full"
-                          initial={{ width: 0 }}
-                          animate={{ width: "100%" }}
-                        />
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <span className="text-sm text-gray-600">{step}</span>
                       </motion.div>
-                    </>
-                  )}
+                    ))}
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -253,7 +210,6 @@ export function ProtectStep({ setIsStepComplete }: { setIsStepComplete: (isCompl
         </div>
       </div>
 
-      {/* Botão de navegação centralizado */}
       {isEncrypted && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
