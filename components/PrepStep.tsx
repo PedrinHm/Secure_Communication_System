@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/components/ui/use-toast";
+import { motion } from "framer-motion";
+import { RefreshCw } from "lucide-react";
 
 export function PrepStep({ setIsStepComplete }: { setIsStepComplete: (isComplete: boolean) => void }) {
   const [publicKey, setPublicKey] = useState<string>('');
@@ -78,6 +80,16 @@ export function PrepStep({ setIsStepComplete }: { setIsStepComplete: (isComplete
         description: "Chave pública inserida.",
         variant: "success",
       });
+    }
+  };
+
+  const handleReset = () => {
+    setPublicKey('');
+    setFile(null);
+    setFileContent(null);
+    setFileHash(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -270,6 +282,23 @@ export function PrepStep({ setIsStepComplete }: { setIsStepComplete: (isComplete
             </div>
           )}
         </div>
+
+        {(publicKey.trim().length > 0 && file) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex justify-center pt-4"
+          >
+            <Button
+              variant="outline"
+              onClick={handleReset}
+              className="hover:bg-gray-50"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Repetir
+            </Button>
+          </motion.div>
+        )}
       </div>
     </TooltipProvider>
   );

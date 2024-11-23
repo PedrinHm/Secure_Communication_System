@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
+import { motion } from 'framer-motion';
 import { FaKey } from "react-icons/fa";
 import { MdSecurity } from "react-icons/md";
 import { Button } from "@/components/ui/button";
 import { KeyGenerationLoading } from "@/components/KeyGenerationLoading";
 import { KeyDisplay } from "@/components/KeyDisplay";
+import { RefreshCw } from "lucide-react";
 
 export function ConfigStep({ setIsStepComplete }: { setIsStepComplete: (isComplete: boolean) => void }) {
   const [showRSALoading, setShowRSALoading] = useState(false);
@@ -27,6 +29,15 @@ export function ConfigStep({ setIsStepComplete }: { setIsStepComplete: (isComple
     }, 2000);
   };
 
+  const handleReset = () => {
+    setShowRSALoading(false);
+    setShowAESLoading(false);
+    setRsaGenerated(false);
+    setAesGenerated(false);
+    setShowRSAKeys(false);
+    setShowAESKey(false);
+  };
+
   useEffect(() => {
     // Atualiza o estado de conclusão quando ambas as chaves forem geradas
     setIsStepComplete(rsaGenerated && aesGenerated);
@@ -37,31 +48,54 @@ export function ConfigStep({ setIsStepComplete }: { setIsStepComplete: (isComple
       <h2 className="text-xl font-bold">Configuração Inicial</h2>
 
       <div className="flex flex-col gap-4 h-full">
-        {/* Botão RSA */}
-        <Button
-          onClick={handleGenerateRSA}
-          className={`gap-6 max-w-[280px] ${
-            rsaGenerated ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
-          }`}
-          size="lg"
-          disabled={rsaGenerated}
-        >
-          <FaKey className="text-2xl" />
-          <span>{rsaGenerated ? "Chaves RSA Geradas" : "Gerar Par de Chaves RSA"}</span>
-        </Button>
+        {/* Container para os botões e reset */}
+        <div className="flex justify-between items-start">
+          {/* Container para os botões de gerar chaves */}
+          <div className="flex flex-col gap-4">
+            {/* Botão RSA */}
+            <Button
+              onClick={handleGenerateRSA}
+              className={`gap-6 max-w-[280px] ${
+                rsaGenerated ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
+              }`}
+              size="lg"
+              disabled={rsaGenerated}
+            >
+              <FaKey className="text-2xl" />
+              <span>{rsaGenerated ? "Chaves RSA Geradas" : "Gerar Par de Chaves RSA"}</span>
+            </Button>
 
-        {/* Botão AES */}
-        <Button
-          onClick={handleGenerateAES}
-          className={`gap-6 max-w-[280px] ${
-            aesGenerated ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
-          }`}
-          size="lg"
-          disabled={aesGenerated}
-        >
-          <MdSecurity className="text-2xl" />
-          <span>{aesGenerated ? "Chave AES Gerada" : "Gerar Chave AES"}</span>
-        </Button>
+            {/* Botão AES */}
+            <Button
+              onClick={handleGenerateAES}
+              className={`gap-6 max-w-[280px] ${
+                aesGenerated ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
+              }`}
+              size="lg"
+              disabled={aesGenerated}
+            >
+              <MdSecurity className="text-2xl" />
+              <span>{aesGenerated ? "Chave AES Gerada" : "Gerar Chave AES"}</span>
+            </Button>
+          </div>
+
+          {/* Botão de Reset */}
+          {(rsaGenerated && aesGenerated) && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+            >
+              <Button
+                variant="outline"
+                onClick={handleReset}
+                className="hover:bg-gray-50"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Repetir
+              </Button>
+            </motion.div>
+          )}
+        </div>
 
         {/* Loading RSA */}
         {showRSALoading && (
@@ -91,7 +125,7 @@ export function ConfigStep({ setIsStepComplete }: { setIsStepComplete: (isComple
             <>
               <KeyDisplay
                 title="Chave Pública RSA"
-                content={`-----BEGIN PUBLIC KEY-----\nMIIEowIBAAKCAQEABQEFz5A89cK3ow\nE9TVON1X4Rt1wihx9DzQ9/HmjAQSu\nsLJqGhFdleR75mv1o4cnfOfR7dUwU\nnCdk8dGd2WEdheM5Kth3gVLVNbHg8\nTlFy3DkNLOfkP1K38zjFL2nJhgvQi\n2vGOhS6X8dbsq2zjS3MK+q1xL03ax\nGyZSOEVTuLpTfPXtbfZtiHEwewH/J\nGZSAHiSglHZvGSnsZmWePAFzTh7Gw\n1KSF4TS3D6DqQlY6RHqW5Tu8pK2uG\n5Kct5ihxtE7fZ8nWGu8w4tbHsQlYh\n-----END PUBLIC KEY-----`}
+                content={`-----BEGIN PUBLIC KEY-----\nMIIEowIBAAKCAQEABQEFz5A89cK3ow\nE9TVON1X4Rt1wihx9DzQ9/HmjAQSu\nsLJqGhFdleR75mv1o4cnfOfR7dUwU\nCdk8dGd2WEdheM5Kth3gVLVNbHg8\nTlFy3DkNLOfkP1K38zjFL2nJhgvQi\n2vGOhS6X8dbsq2zjS3MK+q1xL03ax\nGyZSOEVTuLpTfPXtbfZtiHEwewH/J\nGZSAHiSglHZvGSnsZmWePAFzTh7Gw\n1KSF4TS3D6DqQlY6RHqW5Tu8pK2uG\n5Kct5ihxtE7fZ8nWGu8w4tbHsQlYh\n-----END PUBLIC KEY-----`}
                 bgColor="#e0f7fa"
                 textColor="#00796b"
               />

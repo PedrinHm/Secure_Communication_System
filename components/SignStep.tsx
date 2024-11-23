@@ -34,6 +34,15 @@ export function SignStep({ setIsStepComplete }: { setIsStepComplete: (isComplete
     return "Arquivo assinado e cifrado com sucesso!";
   };
 
+  const handleReset = () => {
+    setIsSigningAnimating(false);
+    setIsEncryptingAnimating(false);
+    setIsSigned(false);
+    setIsEncrypted(false);
+    setShowSignInfo(false);
+    setShowEncryptInfo(false);
+  };
+
   useEffect(() => {
     // Atualiza o estado de conclusão quando o arquivo estiver assinado e cifrado
     setIsStepComplete(isSigned && isEncrypted);
@@ -166,6 +175,24 @@ export function SignStep({ setIsStepComplete }: { setIsStepComplete: (isComplete
           </div>
         </div>
       </div>
+
+      {(isSigned && isEncrypted) && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex justify-center pt-4"
+        >
+          <button
+            onClick={handleReset}
+            className="flex items-center gap-2 px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Repetir
+          </button>
+        </motion.div>
+      )}
     </div>
   );
 }
