@@ -2,6 +2,8 @@ import { useState } from "react";
 import { calculateHash } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function PrepStep() {
   const [publicKey, setPublicKey] = useState<string | null>(null);
@@ -11,18 +13,25 @@ export function PrepStep() {
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
+    if (!selectedFile) return;
 
-      const reader = new FileReader();
-      reader.onload = () => {
-        const content = reader.result as string;
+    setFile(selectedFile);
+    setFileContent(null);
+
+    const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase();
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const content = reader.result as string;
+
+      if (fileExtension === "txt") {
         setFileContent(content);
+      }
 
-        calculateHash(content).then((hash) => setFileHash(hash));
-      };
-      reader.readAsText(selectedFile);
-    }
+      calculateHash(content).then((hash) => setFileHash(hash));
+    };
+
+    reader.readAsText(selectedFile);
   };
 
   return (
@@ -30,26 +39,26 @@ export function PrepStep() {
       <h2 className="text-xl font-bold">Preparação do Ambiente</h2>
 
       <div className="mb-4">
-        <label htmlFor="publicKeyInput" className="block font-medium">
-          Chave Pública do Destinatário (Professor):
-        </label>
+        <Label htmlFor="publicKeyInput" className="block font-medium">
+          Chave Pública do Destinatário:
+        </Label>
         <Textarea
           id="publicKeyInput"
           placeholder="Insira a chave pública aqui"
           value={publicKey || ""}
           onChange={(e) => setPublicKey(e.target.value)}
-          className="mt-2"
+          className="mt-2 min-h-[60px]"
         />
       </div>
 
       <div className="mb-4">
-        <label htmlFor="fileInput" className="block font-medium">
+        <Label htmlFor="fileInput" className="block font-medium">
           Selecionar Arquivo para Enviar:
-        </label>
-        <input
+        </Label>
+        <Input
           id="fileInput"
           type="file"
-          className="mt-0 block w-full border rounded p-2"
+          className="mt-2"
           onChange={handleFileSelect}
         />
         {file && (
@@ -60,12 +69,14 @@ export function PrepStep() {
       </div>
 
       {fileContent && (
-        <ScrollArea className="bg-gray-100 rounded max-h-40 overflow-hidden mb-4">
-          <div className="p-4">
+        <div className="bg-gray-100 rounded max-h-40 overflow-hidden">
+          <div className="p-4 border-b border-gray-300">
             <strong>Conteúdo do Arquivo:</strong>
-            <pre className="mt-1 text-sm whitespace-pre-wrap">{fileContent}</pre>
           </div>
-        </ScrollArea>
+          <ScrollArea className="p-4 overflow-auto max-h-[120px]">
+            <pre className="mt-1 text-sm whitespace-pre-wrap">{fileContent}</pre>
+          </ScrollArea>
+        </div>
       )}
 
       {fileHash && (
