@@ -2,7 +2,7 @@ import { Step } from "@/types/steps";
 import { ConfigStep } from '@/components/ConfigStep';
 import { PrepStep } from '@/components/PrepStep';
 import { SignStep } from "@/components/SignStep";
-import { ProtectionStep } from "@/components/ProtectionStep";
+import { ProtectStep } from "@/components/ProtectStep";
 import { SendStep } from "@/components/SendStep";
 import { VerifyStep } from "@/components/VerifyStep";
 
@@ -25,7 +25,7 @@ export const steps: Step[] = [
   {
     id: 'protect',
     title: 'Proteção da Chave Simétrica',
-    content: ProtectionStep,
+    content: ProtectStep,
   },
   {
     id: 'pack',
