@@ -52,7 +52,7 @@ export function KeyGenerationLoading({ type, onComplete }: KeyGenerationLoadingP
         }
         return prev + 1;
       });
-    }, 3000);
+    }, 1000);
 
     return () => clearInterval(timer);
   }, [config.steps.length]);
