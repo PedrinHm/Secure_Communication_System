@@ -29,7 +29,7 @@ export function KeyDisplay({ title, content, bgColor, textColor }: KeyDisplayPro
         backgroundColor: bgColor,
         borderColor: textColor,
       }}
-      className="p-8 rounded-lg border flex flex-col items-center justify-start w-[300px] h-[300px] m-4 shadow-md"
+      className="p-4 rounded-lg border flex flex-col items-center justify-start w-[300px] h-[330px] m-4 shadow-md"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
