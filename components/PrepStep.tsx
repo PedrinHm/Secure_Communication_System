@@ -3,7 +3,7 @@ import { calculateHash } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 
-export default function PrepStep() {
+export function PrepStep() {
   const [publicKey, setPublicKey] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [fileContent, setFileContent] = useState<string | null>(null);
