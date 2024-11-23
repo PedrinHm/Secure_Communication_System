@@ -25,35 +25,46 @@ function DetailedStep({ completed, step, currentStep, isProcessing }: DetailedSt
             {completed && <CheckIcon className="w-6 h-6 text-green-500" />}
           </div>
           
-          <div className="flex items-center justify-center gap-8 py-4">
+          <div className="flex items-center justify-center gap-12 py-8">
             <motion.div 
               className="flex flex-col items-center"
-              animate={isActive ? { x: 140 } : { x: 0 }}
-              transition={{ duration: 1.5, ease: "easeInOut" }}
+              animate={isActive ? { 
+                x: 100,
+                scale: [1, 1.1, 1],
+                rotateY: [0, 360]
+              } : { x: 0 }}
+              transition={{ 
+                duration: 1.8, 
+                ease: "easeInOut",
+                times: [0, 0.5, 1]
+              }}
             >
-              <KeyIcon className="w-12 h-12 text-blue-500" />
-              <span className="text-sm mt-2">Chave RSA Privada</span>
+              <KeyIcon className="w-14 h-14 text-blue-500" />
+              <span className="text-sm mt-3 font-medium">Chave RSA Privada</span>
             </motion.div>
 
             <motion.div 
               className="flex flex-col items-center relative"
               animate={isActive || completed ? 
-                { filter: "blur(0px)" } : 
-                { filter: "blur(4px)" }
+                { filter: "blur(0px)", scale: 1 } : 
+                { filter: "blur(4px)", scale: 0.9 }
               }
-              transition={{ duration: 0.5, delay: isActive ? 1.2 : 0 }}
+              transition={{ duration: 0.7, delay: isActive ? 1.5 : 0 }}
             >
-              <KeyIcon className="w-12 h-12 text-green-500" />
-              <span className="text-sm mt-2">Chave AES</span>
+              <KeyIcon className="w-14 h-14 text-green-500" />
+              <span className="text-sm mt-3 font-medium">Chave AES</span>
               {isActive && (
                 <motion.div
-                  className="absolute inset-0 bg-green-500/20 rounded-full"
+                  className="absolute inset-0 bg-green-500/30 rounded-full"
                   initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1.5, opacity: 0 }}
+                  animate={{ 
+                    scale: [1, 1.5, 1],
+                    opacity: [0.6, 0, 0.6]
+                  }}
                   transition={{ 
-                    duration: 0.8, 
-                    delay: 1.2,
-                    ease: "easeOut"
+                    duration: 1.2, 
+                    delay: 1.5,
+                    repeat: Infinity
                   }}
                 />
               )}
@@ -74,46 +85,44 @@ function DetailedStep({ completed, step, currentStep, isProcessing }: DetailedSt
             {completed && <CheckIcon className="w-6 h-6 text-green-500" />}
           </div>
           
-          <div className="flex items-center justify-center py-4 relative">
-            <div className="relative flex items-center justify-center gap-20">
-              {/* Arquivo Cifrado Inicial */}
+          <div className="flex items-center justify-center py-8 relative">
+            <div className="relative flex items-center justify-center gap-24">
               <motion.div 
                 className="flex flex-col items-center"
-                animate={completed ? { opacity: 0 } : { opacity: 1 }}
-                transition={{ duration: 0.5 }}
+                animate={completed ? 
+                  { opacity: 0, x: -50 } : 
+                  { opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
               >
-                <DocumentIcon className="w-12 h-12 text-gray-400" />
-                <span className="text-sm mt-2">Arquivo Cifrado</span>
+                <DocumentIcon className="w-14 h-14 text-gray-400" />
+                <span className="text-sm mt-3 font-medium">Arquivo Cifrado</span>
               </motion.div>
 
-              {/* Arquivo Original (aparece gradualmente) */}
               <motion.div 
                 className="flex flex-col items-center absolute"
-                initial={{ opacity: 0 }}
-                animate={completed ? { opacity: 1 } : { opacity: 0 }}
-                transition={{ duration: 0.5, delay: isActive ? 1.5 : 0 }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={completed ? 
+                  { opacity: 1, scale: 1 } : 
+                  { opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.8, delay: isActive ? 2 : 0 }}
               >
-                <DocumentIcon className="w-12 h-12 text-green-500" />
-                <span className="text-sm mt-2">Arquivo Original</span>
+                <DocumentIcon className="w-14 h-14 text-green-500" />
+                <span className="text-sm mt-3 font-medium">Arquivo Original</span>
               </motion.div>
 
-              {/* Chave AES Animada com título */}
               {(isActive || completed) && (
                 <motion.div
-                  className="flex flex-col items-center"
-                  initial={{ x: -100, opacity: 0 }}
+                  className="flex flex-col items-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                  initial={{ scale: 0, opacity: 0 }}
                   animate={{ 
-                    x: 0,
-                    opacity: 1,
-                    scale: isActive ? [1, 1.2, 1] : 1
+                    scale: [0, 1.2, 1],
+                    opacity: [0, 1, 1],
+                    rotate: [0, 360]
                   }}
-                  transition={{ 
-                    duration: isActive ? 2 : 0.5,
-                    times: isActive ? [0, 0.3, 1] : undefined
-                  }}
+                  transition={{ duration: 1.5 }}
                 >
-                  <KeyIcon className="w-8 h-8 text-green-500" />
-                  <span className="text-xs mt-1">Chave AES</span>
+                  <KeyIcon className="w-10 h-10 text-green-500" />
+                  <span className="text-xs mt-2 font-medium">Chave AES</span>
                 </motion.div>
               )}
             </div>
@@ -126,7 +135,7 @@ function DetailedStep({ completed, step, currentStep, isProcessing }: DetailedSt
         </div>
       )}
 
-      {step === 3 && (
+     {step === 3 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Verificação da Assinatura</h3>
@@ -246,31 +255,72 @@ function DetailedStep({ completed, step, currentStep, isProcessing }: DetailedSt
     </motion.div>
   );
 }
-
 export function VerifyStep() {
   const [privateKey, setPrivateKey] = useState('');
-  const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
-  const [currentStep, setCurrentStep] = useState(0);
+  const [steps, setSteps] = useState({
+    aesRecovery: { status: 'idle' as 'idle' | 'processing' | 'success' | 'error' },
+    fileDecryption: { status: 'idle' as 'idle' | 'processing' | 'success' | 'error' },
+    signatureVerification: { status: 'idle' as 'idle' | 'processing' | 'success' | 'error' }
+  });
 
-  const handleDecryption = async () => {
+  const handleAESRecovery = async () => {
     if (!privateKey.trim()) {
       alert('Por favor, insira a chave privada');
       return;
     }
 
-    setStatus('processing');
-    
-    try {
-      // Simular processo de descriptografia
-      for (let step = 0; step <= 3; step++) {
-        setCurrentStep(step);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-      
-      setStatus('success');
-    } catch (error) {
-      setStatus('error');
+    setSteps(prev => ({
+      ...prev,
+      aesRecovery: { status: 'processing' }
+    }));
+
+    // Simular processo
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    setSteps(prev => ({
+      ...prev,
+      aesRecovery: { status: 'success' }
+    }));
+  };
+
+  const handleFileDecryption = async () => {
+    if (steps.aesRecovery.status !== 'success') {
+      alert('Por favor, complete a recuperação da chave AES primeiro');
+      return;
     }
+
+    setSteps(prev => ({
+      ...prev,
+      fileDecryption: { status: 'processing' }
+    }));
+
+    // Simular processo
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    setSteps(prev => ({
+      ...prev,
+      fileDecryption: { status: 'success' }
+    }));
+  };
+
+  const handleSignatureVerification = async () => {
+    if (steps.fileDecryption.status !== 'success') {
+      alert('Por favor, complete a descriptografia do arquivo primeiro');
+      return;
+    }
+
+    setSteps(prev => ({
+      ...prev,
+      signatureVerification: { status: 'processing' }
+    }));
+
+    // Simular processo
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
+    setSteps(prev => ({
+      ...prev,
+      signatureVerification: { status: 'success' }
+    }));
   };
 
   return (
@@ -293,44 +343,67 @@ export function VerifyStep() {
             placeholder="Digite sua chave privada RSA"
           />
         </div>
-
-        <button
-          onClick={handleDecryption}
-          disabled={status === 'processing'}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          {status === 'processing' ? 'Processando...' : 'Iniciar Descriptografia'}
-        </button>
       </div>
 
-      {status !== 'idle' && (
+      <div className="space-y-6">
         <div className="space-y-4">
           <DetailedStep 
-            completed={currentStep >= 1}
+            completed={steps.aesRecovery.status === 'success'}
             step={1}
-            currentStep={currentStep}
-            isProcessing={status === 'processing'}
+            currentStep={steps.aesRecovery.status === 'processing' ? 1 : 0}
+            isProcessing={steps.aesRecovery.status === 'processing'}
           />
-          <DetailedStep 
-            completed={currentStep >= 2}
-            step={2}
-            currentStep={currentStep}
-            isProcessing={status === 'processing'}
-          />
-          <DetailedStep 
-            completed={currentStep >= 3}
-            step={3}
-            currentStep={currentStep}
-            isProcessing={status === 'processing'}
-          />
-
-          {status === 'success' && (
-            <div className="bg-green-100 text-green-700 p-4 rounded">
-              Arquivo verificado e descriptografado com sucesso!
-            </div>
-          )}
+          <button
+            onClick={handleAESRecovery}
+            disabled={steps.aesRecovery.status === 'processing' || steps.aesRecovery.status === 'success'}
+            className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-300"
+          >
+            {steps.aesRecovery.status === 'processing' ? 'Recuperando...' : 
+             steps.aesRecovery.status === 'success' ? 'Chave AES Recuperada' : 
+             'Recuperar Chave AES'}
+          </button>
         </div>
-      )}
+
+        <div className="space-y-4">
+          <DetailedStep 
+            completed={steps.fileDecryption.status === 'success'}
+            step={2}
+            currentStep={steps.fileDecryption.status === 'processing' ? 2 : 0}
+            isProcessing={steps.fileDecryption.status === 'processing'}
+          />
+          <button
+            onClick={handleFileDecryption}
+            disabled={steps.fileDecryption.status === 'processing' || 
+                     steps.fileDecryption.status === 'success' || 
+                     steps.aesRecovery.status !== 'success'}
+            className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-300"
+          >
+            {steps.fileDecryption.status === 'processing' ? 'Descriptografando...' : 
+             steps.fileDecryption.status === 'success' ? 'Arquivo Descriptografado' : 
+             'Descriptografar Arquivo'}
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          <DetailedStep 
+            completed={steps.signatureVerification.status === 'success'}
+            step={3}
+            currentStep={steps.signatureVerification.status === 'processing' ? 3 : 0}
+            isProcessing={steps.signatureVerification.status === 'processing'}
+          />
+          <button
+            onClick={handleSignatureVerification}
+            disabled={steps.signatureVerification.status === 'processing' || 
+                     steps.signatureVerification.status === 'success' || 
+                     steps.fileDecryption.status !== 'success'}
+            className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-300"
+          >
+            {steps.signatureVerification.status === 'processing' ? 'Verificando...' : 
+             steps.signatureVerification.status === 'success' ? 'Assinatura Verificada' : 
+             'Verificar Assinatura'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
