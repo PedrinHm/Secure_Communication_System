@@ -1,13 +1,120 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
   LockClosedIcon as LockIcon,
   KeyIcon,
   UserIcon as StudentIcon,
   UserGroupIcon as TeacherIcon,
-  ArchiveBoxIcon as PackageIcon 
+  ArchiveBoxIcon as PackageIcon,
+  CheckCircleIcon
 } from '@heroicons/react/24/solid';
 import { PencilSquareIcon as SignatureIcon } from '@heroicons/react/24/solid';
+
+const ANIMATION_DELAY = 800;
+const MOVEMENT_DELAY = 4000;
+const SUCCESS_DELAY = 9000;
+
+const PACKAGE_STEPS = [
+  {
+    icon: LockIcon,
+    text: "Arquivo cifrado com chave simétrica",
+    delay: 0.8
+  },
+  {
+    icon: SignatureIcon,
+    text: "Assinatura digital do arquivo original",
+    delay: 1.6
+  },
+  {
+    icon: KeyIcon,
+    text: "Chave simétrica cifrada com RSA",
+    delay: 2.4
+  }
+] as const;
+
+const ANIMATION_VARIANTS = {
+  packageMovement: {
+    initial: { left: 0, y: -30 },
+    animate: { 
+      left: 'calc(100% - 16px)',
+      y: [-30, -40, -30, -40, -30],
+      rotate: [0, 3, 0, -3, 0],
+      scale: [1, 1.05, 1, 1.05, 1]
+    },
+    transition: { 
+      duration: 8,
+      times: [0, 0.25, 0.5, 0.75, 1],
+      ease: [0.4, 0.0, 0.2, 1], 
+      repeat: 0,
+      repeatDelay: 0
+    }
+  },
+  checkmark: {
+    initial: { scale: 0, opacity: 0 },
+    animate: { 
+      scale: 1, 
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 200,
+        damping: 15
+      }
+    }
+  }
+};
+
+const PackageSteps = ({ completedSteps }) => (
+  <ul className="space-y-3 flex-1">
+    {PACKAGE_STEPS.map((step, index) => (
+      <motion.li 
+        key={index}
+        className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50"
+      >
+        <div className="flex items-center">
+          <step.icon className="w-5 h-5 mr-3 text-blue-500" />
+          <span>{step.text}</span>
+        </div>
+        
+        <motion.div
+          variants={ANIMATION_VARIANTS.checkmark}
+          initial="initial"
+          animate={completedSteps > index ? "animate" : "initial"}
+          className="ml-2"
+        >
+          <CheckCircleIcon className="w-6 h-6 text-green-500" />
+        </motion.div>
+      </motion.li>
+    ))}
+  </ul>
+);
+
+const SecurityGuarantees = ({ garantias, etapaAtual }) => (
+  <div className="space-y-3 flex-1">
+    {garantias.map((garantia, index) => (
+      <motion.div
+        key={index}
+        initial={{ opacity: 0, x: -20 }}
+        animate={etapaAtual > index ? { 
+          opacity: 1, 
+          x: 0,
+          transition: {
+            delay: garantia.delay - 0.3,
+            duration: 0.5
+          }
+        } : {}}
+        className="flex items-center text-gray-600"
+      >
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          className="flex items-center"
+        >
+          <garantia.icon className="w-5 h-5 mr-3 text-green-500" />
+          <span>{garantia.texto}</span>
+        </motion.div>
+      </motion.div>
+    ))}
+  </div>
+);
 
 export function SendStep({ stepState, setStepState, setIsStepComplete }) {
   const {
@@ -35,32 +142,35 @@ export function SendStep({ stepState, setStepState, setIsStepComplete }) {
     ],
   } = stepState;
 
-  const handleEnvio = () => {
+  const [completedSteps, setCompletedSteps] = useState(0);
+
+  const handleEnvio = useCallback(() => {
     setStepState({ enviado: true, etapaAtual: 0 });
 
-    // Animar as garantias sequencialmente
+    PACKAGE_STEPS.forEach((_, index) => {
+      setTimeout(() => {
+        setCompletedSteps(index + 1);
+      }, index * ANIMATION_DELAY);
+    });
+
     garantias.forEach((_, index) => {
       setTimeout(() => {
         setStepState((prev) => ({
           ...prev,
           etapaAtual: index + 1,
         }));
-      }, index * 800);
+      }, (index + PACKAGE_STEPS.length) * ANIMATION_DELAY);
     });
 
-    // Iniciar movimento apenas após a última garantia ser adicionada
-    setTimeout(() => {
-      setStepState({ iniciarMovimento: true });
-    }, 4000);
-
-    // Exibir mensagem e resumo após o pacote chegar
     setTimeout(() => {
       setStepState({
         mensagemSucesso: 'Pacote enviado com sucesso (e segurança) para o Professor João!',
         mostrarResumo: true,
+        iniciarMovimento: true
       });
-    }, 7500);
-  };
+    }, SUCCESS_DELAY);
+  }, [setStepState, garantias]);
+
 
   const handleReset = () => {
     setStepState({
@@ -73,60 +183,59 @@ export function SendStep({ stepState, setStepState, setIsStepComplete }) {
   };
 
   useEffect(() => {
-    // Atualiza o estado de conclusão quando o pacote for enviado
     setIsStepComplete(enviado && mostrarResumo);
   }, [enviado, mostrarResumo, setIsStepComplete]);
 
+  const PackageWithGlow = () => (
+    <motion.div
+      variants={ANIMATION_VARIANTS.packageMovement}
+      initial="initial"
+      animate={iniciarMovimento ? "animate" : "initial"}
+      className="absolute top-0 -mt-4"
+    >
+      <motion.div
+        whileHover={{ scale: 1.2 }}
+        className="relative"
+      >
+        {/* Efeito de brilho */}
+        <div className="absolute inset-0 bg-blue-400 rounded-full filter blur-md opacity-50"></div>
+        <PackageIcon className="w-8 h-8 text-blue-500 relative z-10" />
+        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-6 h-1 bg-black/10 rounded-full blur-sm"></div>
+      </motion.div>
+    </motion.div>
+  );
+
   return (
-    <div className="flex flex-col items-center p-6 max-w-4xl mx-auto">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold mb-2">Empacotamento e Envio</h2>
+    <div className="flex flex-col items-center p-4 max-w-4xl mx-auto">
+      <div className="text-center mb-4">
+        <h2 className="text-2xl font-bold">Empacotamento e Envio</h2>
       </div>
 
-      <div className="bg-white p-6 rounded-lg shadow-md w-full mb-8">
-        <h3 className="font-semibold mb-4">Componentes do Pacote</h3>
-        <div className="flex flex-col">
-          <div className="flex gap-12 mb-6">
-            <ul className="space-y-3 flex-1">
-              <li className="flex items-center">
-                <LockIcon className="w-5 h-5 mr-3 text-blue-500" />
-                <span>Arquivo cifrado com chave simétrica</span>
-              </li>
-              <li className="flex items-center">
-                <SignatureIcon className="w-5 h-5 mr-3 text-blue-500" />
-                <span>Assinatura digital do arquivo original</span>
-              </li>
-              <li className="flex items-center">
-                <KeyIcon className="w-5 h-5 mr-3 text-blue-500" />
-                <span>Chave simétrica cifrada com RSA</span>
-              </li>
-            </ul>
+      {mensagemSucesso && (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-green-600 font-medium text-lg text-center mb-4"
+        >
+          {mensagemSucesso}
+        </motion.div>
+      )}
 
-            <div className="space-y-3 flex-1">
-              {garantias.map((garantia, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={etapaAtual > index ? { opacity: 1, y: 0 } : {}}
-                  transition={{ duration: 0.3, delay: garantia.delay - 0.3 }}
-                  className="flex items-center text-gray-600"
-                >
-                  <garantia.icon className="w-5 h-5 mr-3 text-green-500" />
-                  <span>{garantia.texto}</span>
-                </motion.div>
-              ))}
-            </div>
-          </div>
+      <div className="bg-white p-4 rounded-lg shadow-md w-full mb-6">
+        <h3 className="font-semibold mb-3">Componentes do Pacote</h3>
+        <div className="flex gap-12 mb-4">
+          <PackageSteps completedSteps={completedSteps} />
+          <SecurityGuarantees garantias={garantias} etapaAtual={etapaAtual} />
+        </div>
 
-          <div className="flex justify-center">
-            <button
-              onClick={handleEnvio}
-              className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors z-10"
-              disabled={enviado}
-            >
-              Enviar Pacote
-            </button>
-          </div>
+        <div className="flex justify-center">
+          <button
+            onClick={handleEnvio}
+            className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors z-10"
+            disabled={enviado}
+          >
+            Enviar Pacote
+          </button>
         </div>
       </div>
 
@@ -166,18 +275,7 @@ export function SendStep({ stepState, setStepState, setIsStepComplete }) {
           </svg>
 
           {enviado && (
-            <motion.div
-              initial={{ left: 0 }}
-              animate={{ left: iniciarMovimento ? 'calc(100% - 16px)' : 0 }}
-              transition={{
-                duration: 3,
-                ease: "linear",
-              }}
-              className="absolute top-0 -translate-y-full -mt-2"
-              style={{ position: 'absolute' }}
-            >
-              <PackageIcon className="w-8 h-8 text-blue-500" />
-            </motion.div>
+            <PackageWithGlow />
           )}
         </div>
 
@@ -186,12 +284,6 @@ export function SendStep({ stepState, setStepState, setIsStepComplete }) {
           <span className="text-sm text-gray-600 mt-1">Professor</span>
         </div>
       </div>
-
-      {mensagemSucesso && (
-        <div className="text-green-600 font-medium mb-4">
-          {mensagemSucesso}
-        </div>
-      )}
 
       {mostrarResumo && (
         <div className="mt-6 bg-gray-50 p-4 rounded-lg w-full">
