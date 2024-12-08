@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 interface KeyDisplayProps {
   title: string;
   content: string;
@@ -8,8 +6,6 @@ interface KeyDisplayProps {
 }
 
 export function KeyDisplay({ title, content, bgColor, textColor }: KeyDisplayProps) {
-  const [isHovered, setIsHovered] = useState(false);
-
   const getExplanation = (title: string) => {
     switch (title) {
       case "Chave Pública RSA":
@@ -19,7 +15,7 @@ export function KeyDisplay({ title, content, bgColor, textColor }: KeyDisplayPro
       case "Chave AES":
         return "Chave simétrica AES é usada tanto para criptografar quanto descriptografar dados. É mais rápida que RSA, mas deve ser compartilhada de forma segura.";
       default:
-        return content;
+        return "";
     }
   };
 
@@ -30,8 +26,6 @@ export function KeyDisplay({ title, content, bgColor, textColor }: KeyDisplayPro
         borderColor: textColor,
       }}
       className="p-4 rounded-lg border flex flex-col items-center justify-start w-[300px] h-[330px] m-4 shadow-md"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       <h3 className="text-lg font-semibold mb-4 text-center" style={{ color: textColor }}>
         {title}
@@ -45,8 +39,11 @@ export function KeyDisplay({ title, content, bgColor, textColor }: KeyDisplayPro
           whiteSpace: "pre-wrap",
         }}
       >
-        {isHovered ? getExplanation(title) : content}
+        {content}
       </pre>
+      <p className="text-xs text-center mt-2" style={{ color: textColor }}>
+        {getExplanation(title)}
+      </p>
     </div>
   );
 }

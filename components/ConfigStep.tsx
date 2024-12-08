@@ -6,21 +6,41 @@ import { Button } from "@/components/ui/button";
 import { KeyGenerationLoading } from "@/components/KeyGenerationLoading";
 import { KeyDisplay } from "@/components/KeyDisplay";
 import { RefreshCw } from "lucide-react";
+import forge from 'node-forge';
+import crypto from 'crypto';
 
 export function ConfigStep({ stepState, setStepState, setIsStepComplete }) {
   const { rsaGenerated, aesGenerated, showRSALoading, showAESLoading, showRSAKeys, showAESKey } = stepState;
 
   const handleGenerateRSA = () => {
     setStepState({ showRSALoading: true });
+    
     setTimeout(() => {
-      setStepState({ rsaGenerated: true, showRSALoading: false, showRSAKeys: true });
+      const { privateKey, publicKey } = forge.pki.rsa.generateKeyPair(2048);
+      const privateKeyPem = forge.pki.privateKeyToPem(privateKey);
+      const publicKeyPem = forge.pki.publicKeyToPem(publicKey);
+
+      setStepState({ 
+        rsaGenerated: true, 
+        showRSALoading: false, 
+        showRSAKeys: true,
+        rsaPrivateKey: privateKeyPem,
+        rsaPublicKey: publicKeyPem
+      });
     }, 2000);
   };
 
   const handleGenerateAES = () => {
     setStepState({ showAESLoading: true });
+    
     setTimeout(() => {
-      setStepState({ aesGenerated: true, showAESLoading: false, showAESKey: true });
+      const key = crypto.randomBytes(32).toString('hex');
+      setStepState({ 
+        aesGenerated: true, 
+        showAESLoading: false, 
+        showAESKey: true,
+        aesKey: key
+      });
     }, 2000);
   };
 
@@ -36,7 +56,6 @@ export function ConfigStep({ stepState, setStepState, setIsStepComplete }) {
   };
 
   useEffect(() => {
-    // Atualiza o estado de conclusão quando ambas as chaves forem geradas
     setIsStepComplete(rsaGenerated && aesGenerated);
   }, [rsaGenerated, aesGenerated, setIsStepComplete]);
 
@@ -105,13 +124,13 @@ export function ConfigStep({ stepState, setStepState, setIsStepComplete }) {
             <>
               <KeyDisplay
                 title="Chave Pública RSA"
-                content={`-----BEGIN PUBLIC KEY-----\nMIIEowIBAAKCAQEABQEFz5A89cK3ow\nE9TVON1X4Rt1wihx9DzQ9/HmjAQSu\nsLJqGhFdleR75mv1o4cnfOfR7dUwU\nCdk8dGd2WEdheM5Kth3gVLVNbHg8\nTlFy3DkNLOfkP1K38zjFL2nJhgvQi\n2vGOhS6X8dbsq2zjS3MK+q1xL03ax\nGyZSOEVTuLpTfPXtbfZtiHEwewH/J\nGZSAHiSglHZvGSnsZmWePAFzTh7Gw\n1KSF4TS3D6DqQlY6RHqW5Tu8pK2uG\n5Kct5ihxtE7fZ8nWGu8w4tbHsQlYh\n-----END PUBLIC KEY-----`}
+                content={stepState.rsaPublicKey}
                 bgColor="#e0f7fa"
                 textColor="#00796b"
               />
               <KeyDisplay
                 title="Chave Privada RSA"
-                content={`-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA5G8R7TICeY5wO\n1VG7N5R3GV2t1nMepB2xZzZ7vjPje\ncI2G9hLq1IjEGJsET+//sE6km/sz9\n8FbHUb5P5CjOc3Boq7O0X2yE6WiEH\n5Kct5ihxtE7fZ8nWGu8w4tbHsQlYh\nWqSHfyQOQlYzm7xApk3mn1HLqO4Ox\nLE0TxjsiDL11ScBppUhOwhbx4VRFI\n0jZFk5C2MwwsPZmftFJROEqgLxy5O\npt+xlwiJFRmlJwACt6lBGoDZT2tiD\n-----END RSA PRIVATE KEY-----`}
+                content={stepState.rsaPrivateKey}
                 bgColor="#e0f7fa"
                 textColor="#00796b"
               />
@@ -121,7 +140,7 @@ export function ConfigStep({ stepState, setStepState, setIsStepComplete }) {
           {showAESKey && (
             <KeyDisplay
               title="Chave AES"
-              content={`WXd9Hndks72MdP93Lw5T7nYFiJ9kIwe3Dn2DJkd8PlW35XKd74hdlwKJ4MnT8Ld9We9TiJ3Mxkf83lDkwiJW9mfDk3kdmD9tF5MlxkWn3dLJtI9wK7fh8HdJwlKfn3jL7fK3j9kDl29tLmfJn3DkL3Mkf9wdL7n8TkKwnfj4LdF9tK8M4fKDmL37djKfKw8wDn6J4HdL9wJfn8d3lkf2n3JdKw4Lfj6Mn4l9TfJn5dwLKwlxn3kT2D6djfkJ92lTwMn`}
+              content={stepState.aesKey}
               bgColor="#f3e5f5"
               textColor="#6a1b9a"
             />

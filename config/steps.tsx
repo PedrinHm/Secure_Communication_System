@@ -5,6 +5,7 @@ import { SignStep } from "@/components/SignStep";
 import { ProtectStep } from "@/components/ProtectStep";
 import { SendStep } from "@/components/SendStep";
 import { VerifyStep } from "@/components/VerifyStep";
+import { useState } from 'react';
 
 export const steps: Step[] = [
   {
