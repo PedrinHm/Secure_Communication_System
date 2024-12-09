@@ -8,19 +8,20 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { toast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
 import { RefreshCw } from "lucide-react";
+import { useStepStore } from '@/store/stepStates';
 
 export function PrepStep({ stepState, setStepState, setIsStepComplete }) {
-  const { publicKey, file, fileContent, fileHash } = stepState; // Extrai o estado da etapa
+  const { publicKey, file, fileContent, fileHash } = stepState;
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { setFile, setFileHash, setRecipientPublicKey } = useStepStore();
 
   useEffect(() => {
     const isPublicKeyValid = publicKey?.trim().length > 0;
     const isFileValid = !!file;
 
-    // Atualiza o estado de conclusão
     setIsStepComplete(isPublicKeyValid && isFileValid);
 
-    // Feedback visual opcional para o usuário
     if (isPublicKeyValid && !isFileValid) {
       toast({
         title: "Quase lá!",
@@ -40,23 +41,31 @@ export function PrepStep({ stepState, setStepState, setIsStepComplete }) {
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) return;
 
+    setFile(selectedFile);
     setStepState({ file: selectedFile, fileContent: null });
 
     const isViewableFile = /\.(txt|json|md|csv|log|xml|yaml|yml|html|css|js|ts|jsx|tsx)$/i.test(selectedFile.name);
 
+    const reader = new FileReader();
+    reader.onload = () => {
+      const content = reader.result as string;
+      setStepState({ fileContent: content });
+
+      calculateHash(content).then((hash) => {
+        setFileHash(hash);
+        setStepState({ fileHash: hash });
+      });
+    };
+
     if (isViewableFile) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const content = reader.result as string;
-        setStepState({ fileContent: content });
-        calculateHash(content).then((hash) => setStepState({ fileHash: hash }));
-      };
       reader.readAsText(selectedFile);
     } else {
-      const reader = new FileReader();
       reader.onload = () => {
         const content = reader.result as ArrayBuffer;
-        calculateHash(content).then((hash) => setStepState({ fileHash: hash }));
+        calculateHash(content).then((hash) => {
+          setFileHash(hash);
+          setStepState({ fileHash: hash });
+        });
       };
       reader.readAsArrayBuffer(selectedFile);
     }
@@ -69,6 +78,7 @@ export function PrepStep({ stepState, setStepState, setIsStepComplete }) {
   const handlePublicKeyChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = event.target.value;
     setStepState({ publicKey: value });
+    setRecipientPublicKey(value);
 
     if (value.trim().length > 0) {
       toast({

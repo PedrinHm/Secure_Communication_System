@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react'; 
+import { useState, useEffect } from 'react';
 import { FaFileAlt, FaLock, FaSignature } from 'react-icons/fa';
+import forge from 'node-forge';
+import { useStepStore } from '@/store/stepStates';
 
 export function SignStep({ stepState, setStepState, setIsStepComplete }) {
   const {
@@ -10,17 +12,100 @@ export function SignStep({ stepState, setStepState, setIsStepComplete }) {
     isEncrypted,
     showSignInfo,
     showEncryptInfo,
-  } = stepState; 
+  } = stepState;
 
-  const startSigningAnimation = () => {
-    setStepState({ isSigningAnimating: true });
-    setTimeout(() => {
+  const { rsaPrivateKey, file, fileHash, recipientPublicKey } = useStepStore();
+
+  const handleSignAndEncryptDocument = async () => {
+    if (!file || !rsaPrivateKey) {
+      console.error("Arquivo ou chave privada não estão disponíveis.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const documentContent = reader.result as string;
+
+      const md = forge.md.sha256.create();
+      md.update(documentContent, 'utf8');
+
+      const privateKey = forge.pki.privateKeyFromPem(rsaPrivateKey);
+      const signature = privateKey.sign(md);
+      const signatureBase64 = forge.util.encode64(signature);
+
+      console.log("Assinatura gerada:", signatureBase64);   
+
       setStepState({ isSigningAnimating: false, isSigned: true });
-    }, 2000);
+    };
+
+    reader.readAsText(file);
+    setStepState({ isSigningAnimating: true });
   };
+
+  // const createTarGz = async (files: Blob[], outputFileName: string) => {
+  //   return new Promise((resolve, reject) => {
+  //     const output = fs.createWriteStream(outputFileName);
+  //     const archive = archiver('gz');
+
+  //     output.on('close', () => {
+  //       console.log(`Arquivo ${outputFileName} criado com sucesso.`);
+  //       resolve(true);
+  //     });
+
+  //     archive.on('error', (err) => {
+  //       reject(err);
+  //     });
+
+  //     archive.pipe(output);
+
+  //     files.forEach((file) => {
+  //       archive.append(file, { name: path.basename(file.name) });
+  //     });
+
+  //     archive.finalize();
+  //   });
+  // };
+
+  // const splitFile = async (fileName: string, size: number) => {
+  //   const fileBuffer = fs.readFileSync(fileName);
+  //   const totalParts = Math.ceil(fileBuffer.length / size);
+
+  //   for (let i = 0; i < totalParts; i++) {
+  //     const partBuffer = fileBuffer.slice(i * size, (i + 1) * size);
+  //     const partFileName = `${fileName}.part${i + 1}`;
+  //     fs.writeFileSync(partFileName, partBuffer);
+  //     console.log(`Parte ${partFileName} criada.`);
+  //   }
+  // };
+
+  // const encryptParts = async (partPrefix: string) => {
+  //   if (!recipientPublicKey) {
+  //     console.error("Chave pública do destinatário não está disponível.");
+  //     return;
+  //   }
+
+  //   const publicKey = forge.pki.publicKeyFromPem(recipientPublicKey);
+
+  //   const files = fs.readdirSync('.').filter(file => file.startsWith(partPrefix));
+
+  //   for (const file of files) {
+  //     const fileBuffer = fs.readFileSync(file);
+  //     const encrypted = publicKey.encrypt(fileBuffer);
+  //     const encryptedFileName = `${file}.enc`;
+  //     fs.writeFileSync(encryptedFileName, encrypted);
+  //     console.log(`Arquivo cifrado: ${encryptedFileName}`);
+  //   }
+  // };
 
   const startEncryptingAnimation = () => {
     setStepState({ isEncryptingAnimating: true });
+
+    // const tarFileName = 'document_e_assinatura.tar.gz';
+    // await createTarGz([file, signatureBase64], tarFileName);
+
+    // await splitFile(tarFileName, 200); 
+
+    // await encryptParts('part_'); 
     setTimeout(() => {
       setStepState({ isEncryptingAnimating: false, isEncrypted: true });
     }, 2000);
@@ -46,7 +131,6 @@ export function SignStep({ stepState, setStepState, setIsStepComplete }) {
   };
 
   useEffect(() => {
-    // Atualiza o estado de conclusão quando o arquivo estiver assinado e cifrado
     setIsStepComplete(isSigned && isEncrypted);
   }, [isSigned, isEncrypted, setIsStepComplete]);
 
@@ -57,7 +141,7 @@ export function SignStep({ stepState, setStepState, setIsStepComplete }) {
         <div className="flex flex-col items-center">
           <button
             onClick={() => {
-              startSigningAnimation();
+              handleSignAndEncryptDocument();
               setStepState({ showSignInfo: true });
             }}
             className="w-48 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -88,12 +172,11 @@ export function SignStep({ stepState, setStepState, setIsStepComplete }) {
             <motion.div
               className="absolute text-green-600 text-4xl"
               initial={{ x: -100, y: -100, opacity: 0 }}
-              animate={
-                isSigningAnimating
-                  ? { x: 0, y: 0, opacity: 1 }
-                  : isSigned
-                  ? { x: -30, y: -30, opacity: 1 }
-                  : { x: -100, y: -100, opacity: 0 }
+              animate={isSigningAnimating
+                ? { x: 0, y: 0, opacity: 1 }
+                : isSigned
+                ? { x: -30, y: -30, opacity: 1 }
+                : { x: -100, y: -100, opacity: 0 }
               }
               transition={{ duration: 1 }}
             >
@@ -103,12 +186,11 @@ export function SignStep({ stepState, setStepState, setIsStepComplete }) {
             <motion.div
               className="absolute text-yellow-600 text-4xl"
               initial={{ x: 100, y: -100, opacity: 0 }}
-              animate={
-                isEncryptingAnimating
-                  ? { x: 0, y: 0, opacity: 1 }
-                  : isEncrypted
-                  ? { x: 30, y: -30, opacity: 1 }
-                  : { x: 100, y: -100, opacity: 0 }
+              animate={isEncryptingAnimating
+                ? { x: 0, y: 0, opacity: 1 }
+                : isEncrypted
+                ? { x: 30, y: -30, opacity: 1 }
+                : { x: 100, y: -100, opacity: 0 }
               }
               transition={{ duration: 1 }}
             >
@@ -124,42 +206,28 @@ export function SignStep({ stepState, setStepState, setIsStepComplete }) {
               startEncryptingAnimation();
               setStepState({ showEncryptInfo: true });
             }}
-            className="w-48 px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={isSigningAnimating || isEncryptingAnimating || !isSigned || isEncrypted}
+            className="w-48 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isEncryptingAnimating || isEncrypted || !isSigned}
           >
-            Cifrar Arquivo
+            Cifrar Documento
           </button>
           {showEncryptInfo && (
-            <div className="mt-2 bg-yellow-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-yellow-700 mb-2">Cifragem</h3>
-              <p className="text-sm text-yellow-600">
-                A cifragem protege o conteúdo do arquivo, tornando-o ilegível
-                para quem não possui a chave de descriptografia. Apenas o
-                destinatário com a chave correta poderá acessar o conteúdo.
+            <div className="mt-2 bg-blue-50 p-4 rounded-lg">
+              <h3 className="font-semibold text-blue-700 mb-2">Cifra de Documento</h3>
+              <p className="text-sm text-blue-600">
+                A cifra protege o documento, garantindo que apenas o destinatário
+                autorizado, com a chave privada correspondente, possa acessá-lo.
+                Utiliza criptografia assimétrica.
               </p>
             </div>
           )}
         </div>
       </div>
 
-      <p className="text-center text-gray-700">
-        {getStatusText()}
-      </p>
-
-      {(isSigned && isEncrypted) && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex justify-center pt-4"
-        >
-          <button
-            onClick={handleReset}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
-          >
-            Repetir
-          </button>
-        </motion.div>
-      )}
+      {/* Status */}
+      <div className="mt-8 text-center">
+        <h2 className="text-2xl font-semibold">{getStatusText()}</h2>
+      </div>
     </div>
   );
 }

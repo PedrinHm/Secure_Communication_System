@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 export default function Home() {
   const [currentStepId, setCurrentStepId] = useState<StepId>('config');
   const [showSuccess, setShowSuccess] = useState(false);
-  const [isStepComplete, setIsStepComplete] = useState(false); // Mover para fora do stepStates
+  const [isStepComplete, setIsStepComplete] = useState(false);
   const [stepStates, setStepStates] = useState(() => {
     const initialState = {};
     steps.forEach((step) => {
@@ -96,7 +96,7 @@ export default function Home() {
                       },
                     }))
                   }
-                  setIsStepComplete={setIsStepComplete} // Passar a função corretamente
+                  setIsStepComplete={setIsStepComplete} 
                 />
               )}
             </div>

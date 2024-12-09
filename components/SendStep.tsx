@@ -164,7 +164,7 @@ export function SendStep({ stepState, setStepState, setIsStepComplete }) {
 
     setTimeout(() => {
       setStepState({
-        mensagemSucesso: 'Pacote enviado com sucesso (e segurança) para o Professor João!',
+        mensagemSucesso: 'Pacote enviado com sucesso (e segurança) para o Professor Willian!',
         mostrarResumo: true,
         iniciarMovimento: true
       });

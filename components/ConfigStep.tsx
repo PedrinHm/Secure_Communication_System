@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaKey } from "react-icons/fa";
 import { MdSecurity } from "react-icons/md";
@@ -8,9 +8,11 @@ import { KeyDisplay } from "@/components/KeyDisplay";
 import { RefreshCw } from "lucide-react";
 import forge from 'node-forge';
 import crypto from 'crypto';
+import { useStepStore } from '@/store/stepStates';
 
 export function ConfigStep({ stepState, setStepState, setIsStepComplete }) {
   const { rsaGenerated, aesGenerated, showRSALoading, showAESLoading, showRSAKeys, showAESKey } = stepState;
+  const { setRsaPrivateKey, setRsaPublicKey } = useStepStore();
 
   const handleGenerateRSA = () => {
     setStepState({ showRSALoading: true });
@@ -19,6 +21,9 @@ export function ConfigStep({ stepState, setStepState, setIsStepComplete }) {
       const { privateKey, publicKey } = forge.pki.rsa.generateKeyPair(2048);
       const privateKeyPem = forge.pki.privateKeyToPem(privateKey);
       const publicKeyPem = forge.pki.publicKeyToPem(publicKey);
+
+      setRsaPrivateKey(privateKeyPem)
+      setRsaPublicKey(publicKeyPem)
 
       setStepState({ 
         rsaGenerated: true, 
