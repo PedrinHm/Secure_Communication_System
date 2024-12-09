@@ -54,6 +54,9 @@ export function ProtectStep({ stepState, setStepState, setIsStepComplete }) {
 
     const publicKey = forge.pki.publicKeyFromPem(ReceiverPublicKey);
     const encryptedKey = publicKey.encrypt(aesKey, 'RSA-OAEP');
+    console.log('antes')
+    console.log(encryptedKey)
+    const encryptedKeyBase64 = forge.util.encode64(encryptedKey);
 
     setTimeout(() => {
       console.log("Cifragem concluída.");
@@ -61,9 +64,11 @@ export function ProtectStep({ stepState, setStepState, setIsStepComplete }) {
         encryptedKeySize: 256,
         isEncrypting: false,
         isEncrypted: true,
-        encryptedKey: forge.util.encode64(encryptedKey),
+        encryptedKey: encryptedKeyBase64,
       });
-      setEncriptedKey(encryptedKey)
+      setEncriptedKey(encryptedKeyBase64)
+      console.log('dews')
+      console.log(encryptedKeyBase64)
     }, 500);
   };
 

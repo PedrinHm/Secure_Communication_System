@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CheckIcon, KeyIcon, DocumentIcon, ShieldCheckIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { useStepStore } from '@/store/stepStates';
+import forge from 'node-forge';
 
 interface DetailedStepProps {
   completed: boolean;
@@ -9,8 +11,21 @@ interface DetailedStepProps {
   isProcessing: boolean;
 }
 
+
+export const decryptAESKey = (encryptedKey: string, privateKey: string): string => {
+  const privateKeyObj = forge.pki.privateKeyFromPem(privateKey);
+
+  const encryptedKeyBytes = forge.util.decode64(encryptedKey);
+
+  const decryptedKeyBytes = privateKeyObj.decrypt(encryptedKeyBytes, 'RSA-OAEP');
+
+  const decryptedKey = forge.util.bytesToHex(decryptedKeyBytes);
+
+  return decryptedKey;
+};
+
 function DetailedStep({ completed, step, currentStep, isProcessing }: DetailedStepProps) {
-  const isActive = step === currentStep;
+  const isActive = step === currentStep;  
   
   return (
     <motion.div 
@@ -262,10 +277,16 @@ export function VerifyStep({ setIsStepComplete }: { setIsStepComplete: (isComple
     fileDecryption: { status: 'idle' as 'idle' | 'processing' | 'success' | 'error' },
     signatureVerification: { status: 'idle' as 'idle' | 'processing' | 'success' | 'error' }
   });
+  const { encryptedKey, signature, rsaPublicKey, fileHash } = useStepStore();
 
   const handleAESRecovery = async () => {
     if (!privateKey.trim()) {
       alert('Por favor, insira a chave privada');
+      return;
+    }
+
+    if (!encryptedKey) {
+      alert('Chave AES criptografada não encontrada');
       return;
     }
 
@@ -274,13 +295,23 @@ export function VerifyStep({ setIsStepComplete }: { setIsStepComplete: (isComple
       aesRecovery: { status: 'processing' }
     }));
 
-    // Simular processo
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    try {
+      const aesKey = await decryptAESKey(encryptedKey, privateKey);
+      
+      useStepStore.getState().setAesKey(aesKey);
 
-    setSteps(prev => ({
-      ...prev,
-      aesRecovery: { status: 'success' }
-    }));
+      setSteps(prev => ({
+        ...prev,
+        aesRecovery: { status: 'success' }
+      }));
+    } catch (error) {
+      console.error('Erro ao descriptografar a chave AES:', error);
+      alert('Erro ao descriptografar a chave AES');
+      setSteps(prev => ({
+        ...prev,
+        aesRecovery: { status: 'error' }
+      }));
+    }
   };
 
   const handleFileDecryption = async () => {
@@ -294,7 +325,6 @@ export function VerifyStep({ setIsStepComplete }: { setIsStepComplete: (isComple
       fileDecryption: { status: 'processing' }
     }));
 
-    // Simular processo
     await new Promise(resolve => setTimeout(resolve, 3000));
 
     setSteps(prev => ({
@@ -314,12 +344,31 @@ export function VerifyStep({ setIsStepComplete }: { setIsStepComplete: (isComple
       signatureVerification: { status: 'processing' }
     }));
 
-    // Simular processo
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    if (!rsaPublicKey || !fileHash || !signature) {
+      alert('Chave pública, hash do arquivo ou assinatura não estão disponíveis.');
+      setSteps(prev => ({
+        ...prev,
+        signatureVerification: { status: 'error' }
+      }));
+      return;
+    }
+
+    const publicKey = forge.pki.publicKeyFromPem(rsaPublicKey);
+
+    const md = forge.md.sha256.create();
+    md.update(fileHash, 'utf8');
+
+    const isValid = publicKey.verify(md.digest().bytes(), forge.util.decode64(signature));
+
+    if (isValid) {
+      console.log('A assinatura é válida. O hash não foi modificado.');
+    } else {
+      console.log('A assinatura é inválida. O hash foi modificado.');
+    }
 
     setSteps(prev => ({
       ...prev,
-      signatureVerification: { status: 'success' }
+      signatureVerification: { status: isValid ? 'success' : 'error' }
     }));
   };
 

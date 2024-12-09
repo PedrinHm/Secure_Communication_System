@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { FaFileAlt, FaLock, FaSignature } from 'react-icons/fa';
 import forge from 'node-forge';
 import { useStepStore } from '@/store/stepStates';
+import { signHash } from '../lib/utils';
 
 export function SignStep({ stepState, setStepState, setIsStepComplete }) {
   const {
@@ -14,32 +15,20 @@ export function SignStep({ stepState, setStepState, setIsStepComplete }) {
     showEncryptInfo,
   } = stepState;
 
-  const { rsaPrivateKey, file, fileHash, ReceiverPublicKey } = useStepStore();
+  const { rsaPrivateKey, fileHash, ReceiverPublicKey, setSignature } = useStepStore();
 
   const handleSignAndEncryptDocument = async () => {
-    if (!file || !rsaPrivateKey) {
-      console.error("Arquivo ou chave privada não estão disponíveis.");
+    if (!fileHash || !rsaPrivateKey) {
+      console.error("Hash do arquivo ou chave privada não estão disponíveis.");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const documentContent = reader.result as string;
+    const signature = signHash(fileHash, rsaPrivateKey);
+    setSignature(signature)
 
-      const md = forge.md.sha256.create();
-      md.update(documentContent, 'utf8');
+    console.log("Assinatura gerada:", signature);   
 
-      const privateKey = forge.pki.privateKeyFromPem(rsaPrivateKey);
-      const signature = privateKey.sign(md);
-      const signatureBase64 = forge.util.encode64(signature);
-
-      console.log("Assinatura gerada:", signatureBase64);   
-
-      setStepState({ isSigningAnimating: false, isSigned: true });
-    };
-
-    reader.readAsText(file);
-    setStepState({ isSigningAnimating: true });
+    setStepState({ isSigningAnimating: false, isSigned: true });
   };
 
   // const createTarGz = async (files: Blob[], outputFileName: string) => {

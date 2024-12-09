@@ -15,6 +15,7 @@ interface StepState {
   ReceiverPublicKey?: string;
   generatedFiles: { [key: string]: Blob };
   encryptedKey?: string;
+  signature?: string;
   setStepCompleted: (step: string, completed: boolean) => void;  
   setRsaPublicKey: (key: string) => void;
   setRsaPrivateKey: (key: string) => void;
@@ -23,6 +24,7 @@ interface StepState {
   setFileHash: (hash: string) => void;
   setFile: (file: File) => void;
   setEncriptedKey: (key: string) => void;
+  setSignature: (key: string) => void;
 }
 
 export const useStepStore = create<StepState>((set) => ({
@@ -48,4 +50,5 @@ export const useStepStore = create<StepState>((set) => ({
   setFileHash: (hash) => set((state) => ({ ...state, fileHash: hash })),
   setFile: (file) => set((state) => ({ ...state, file: file })),
   setEncriptedKey: (key) => set((state) => ({ ...state, encryptedKey: key })),
+  setSignature: (key) => set((state) => ({ ...state, signature: key })),
 }));
