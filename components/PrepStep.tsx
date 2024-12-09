@@ -14,7 +14,7 @@ export function PrepStep({ stepState, setStepState, setIsStepComplete }) {
   const { publicKey, file, fileContent, fileHash } = stepState;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { setFile, setFileHash, setRecipientPublicKey } = useStepStore();
+  const { setFile, setFileHash, setReceiverPublicKey } = useStepStore();
 
   useEffect(() => {
     const isPublicKeyValid = publicKey?.trim().length > 0;
@@ -78,7 +78,7 @@ export function PrepStep({ stepState, setStepState, setIsStepComplete }) {
   const handlePublicKeyChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = event.target.value;
     setStepState({ publicKey: value });
-    setRecipientPublicKey(value);
+    setReceiverPublicKey(value);
 
     if (value.trim().length > 0) {
       toast({

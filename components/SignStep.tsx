@@ -14,7 +14,7 @@ export function SignStep({ stepState, setStepState, setIsStepComplete }) {
     showEncryptInfo,
   } = stepState;
 
-  const { rsaPrivateKey, file, fileHash, recipientPublicKey } = useStepStore();
+  const { rsaPrivateKey, file, fileHash, ReceiverPublicKey } = useStepStore();
 
   const handleSignAndEncryptDocument = async () => {
     if (!file || !rsaPrivateKey) {
@@ -79,12 +79,12 @@ export function SignStep({ stepState, setStepState, setIsStepComplete }) {
   // };
 
   // const encryptParts = async (partPrefix: string) => {
-  //   if (!recipientPublicKey) {
+  //   if (!ReceiverPublicKey) {
   //     console.error("Chave pública do destinatário não está disponível.");
   //     return;
   //   }
 
-  //   const publicKey = forge.pki.publicKeyFromPem(recipientPublicKey);
+  //   const publicKey = forge.pki.publicKeyFromPem(ReceiverPublicKey);
 
   //   const files = fs.readdirSync('.').filter(file => file.startsWith(partPrefix));
 

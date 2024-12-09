@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Info, Lock, CheckCircle, RefreshCw, Key } from "lucide-react";
+import forge from 'node-forge';
+import { useStepStore } from '@/store/stepStates';
 
 export function ProtectStep({ stepState, setStepState, setIsStepComplete }) {
   const {
@@ -12,9 +14,13 @@ export function ProtectStep({ stepState, setStepState, setIsStepComplete }) {
     showDetails,
     encryptionSteps,
     currentStep,
-    recipientName = "Professor João",
+    recipientName = "Professor Willian",
     originalKeySize = 32, // Tamanho da chave AES (256 bits = 32 bytes)
   } = stepState;
+
+  const { aesKey, ReceiverPublicKey, setEncriptedKey } = useStepStore();
+
+  const receiverPublicKey = stepState.ReceiverPublicKey;
 
   const handleEncryptKey = async () => {
     setStepState({
@@ -42,18 +48,23 @@ export function ProtectStep({ stepState, setStepState, setIsStepComplete }) {
             currentStep: i + 1,
           }));
           resolve(null);
-        }, 800); // Cada etapa leva 800ms
+        }, 100);
       });
     }
 
-    // Finaliza o processo
+    const publicKey = forge.pki.publicKeyFromPem(ReceiverPublicKey);
+    const encryptedKey = publicKey.encrypt(aesKey, 'RSA-OAEP');
+
     setTimeout(() => {
+      console.log("Cifragem concluída.");
       setStepState({
-        encryptedKeySize: 256, // Tamanho típico de uma chave RSA-2048 cifrada
+        encryptedKeySize: 256,
         isEncrypting: false,
         isEncrypted: true,
+        encryptedKey: forge.util.encode64(encryptedKey),
       });
-    }, 1000);
+      setEncriptedKey(encryptedKey)
+    }, 500);
   };
 
   const handleReset = () => {
@@ -71,7 +82,6 @@ export function ProtectStep({ stepState, setStepState, setIsStepComplete }) {
     setStepState({ showDetails: !showDetails });
   };
 
-  // Atualiza o estado de conclusão
   useEffect(() => {
     setIsStepComplete(isEncrypted);
   }, [isEncrypted, setIsStepComplete]);
@@ -103,6 +113,7 @@ export function ProtectStep({ stepState, setStepState, setIsStepComplete }) {
       <AnimatePresence>
         {showDetails && (
           <motion.div
+            key="details"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -161,6 +172,7 @@ export function ProtectStep({ stepState, setStepState, setIsStepComplete }) {
           <AnimatePresence>
             {showInfo && (
               <motion.div
+                key="info"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
@@ -196,6 +208,7 @@ export function ProtectStep({ stepState, setStepState, setIsStepComplete }) {
                         key={index}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
                         className="flex items-center space-x-2"
                       >
                         <CheckCircle className="w-4 h-4 text-green-500" />

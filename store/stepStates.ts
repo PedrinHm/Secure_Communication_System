@@ -12,15 +12,17 @@ interface StepState {
   aesKey?: string;
   fileHash?: string;
   file?: File | null;
-  recipientPublicKey?: string;
+  ReceiverPublicKey?: string;
   generatedFiles: { [key: string]: Blob };
+  encryptedKey?: string;
   setStepCompleted: (step: string, completed: boolean) => void;  
   setRsaPublicKey: (key: string) => void;
   setRsaPrivateKey: (key: string) => void;
-  setRecipientPublicKey: (key: string) => void;
+  setReceiverPublicKey: (key: string) => void;
   setAesKey: (key: string) => void;
   setFileHash: (hash: string) => void;
   setFile: (file: File) => void;
+  setEncriptedKey: (key: string) => void;
 }
 
 export const useStepStore = create<StepState>((set) => ({
@@ -35,14 +37,15 @@ export const useStepStore = create<StepState>((set) => ({
   aesKey: '',
   fileHash: '',
   file: null,
-  recipientPublicKey: '',
+  ReceiverPublicKey: '',
   generatedFiles: {},
   setStepCompleted: (step, completed) =>
     set((state) => ({ ...state, [`${step}Completed`]: completed })),
   setRsaPrivateKey: (key) => set((state) => ({ ...state, rsaPrivateKey: key })),
   setRsaPublicKey: (key) => set((state) => ({ ...state, rsaPublicKey: key })),
-  setRecipientPublicKey: (key) => set((state) => ({ ...state, recipientPublicKey: key })),
+  setReceiverPublicKey: (key) => set((state) => ({ ...state, ReceiverPublicKey: key })),
   setAesKey: (key) => set((state) => ({ ...state, aesKey: key })),
   setFileHash: (hash) => set((state) => ({ ...state, fileHash: hash })),
   setFile: (file) => set((state) => ({ ...state, file: file })),
+  setEncriptedKey: (key) => set((state) => ({ ...state, encryptedKey: key })),
 }));
